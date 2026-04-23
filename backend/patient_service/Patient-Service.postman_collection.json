@@ -1,0 +1,125 @@
+{
+	"info": {
+		"_postman_id": "a2b3c4d5-e6f7-g8h9-i0j1-k2l3m4n5o6p7",
+		"name": "Patient Service API",
+		"description": "API collection for testing Patient Service endpoints.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create Patient",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userId\": \"{{$guid}}\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"dateOfBirth\": \"1990-05-15\",\n    \"gender\": \"MALE\",\n    \"phone\": \"+20 100 123 4567\",\n    \"address\": \"12 Nile St, Cairo\",\n    \"bloodType\": \"O+\",\n    \"knownAllergies\": \"Penicillin\",\n    \"emergencyContact\": \"Jane Doe\",\n    \"emergencyPhone\": \"+20 100 987 6543\",\n    \"insuranceProvider\": \"AllianzEgypt\",\n    \"insuranceNumber\": \"AE-2024-9876\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/patients",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"patients"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Patients",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/patients?name=John&page=0&size=20",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"patients"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "John",
+							"description": "Search by name"
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Patient by ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/patients/{{patientId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"patients",
+						"{{patientId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Patient",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"firstName\": \"John Updated\",\n    \"phone\": \"+20 111 222 3333\",\n    \"address\": \"24 Tahrir St, Cairo\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/patients/{{patientId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"patients",
+						"{{patientId}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8082",
+			"type": "string"
+		},
+		{
+			"key": "patientId",
+			"value": "REPLACE_WITH_UUID",
+			"type": "string"
+		}
+	]
+}

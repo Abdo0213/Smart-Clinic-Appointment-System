@@ -24,7 +24,7 @@ public class Patient {
     private String address;
 
     private String bloodType;
-    private String KnownAllergies;
+    private String knownAllergies;
 
     private String emergencyContact;
     private String emergencyPhone;
@@ -33,5 +33,5 @@ public class Patient {
     private String insuranceNumber;
 
     private LocalDateTime createdAt;
-    private LocalDateTime UpdatedAt;
+    private LocalDateTime updatedAt;
 }

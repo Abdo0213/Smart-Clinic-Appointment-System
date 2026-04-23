@@ -1,0 +1,202 @@
+{
+	"info": {
+		"_postman_id": "a9b8c7d6-e5f4-3210-9876-543210fedcba",
+		"name": "Appointment Service API",
+		"description": "API collection for testing Appointment Service endpoints.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Book Appointment",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"patientId\": \"{{patientId}}\",\n    \"doctorId\": \"{{doctorId}}\",\n    \"slotDate\": \"2026-04-20\",\n    \"slotStart\": \"10:00:00\",\n    \"slotEnd\": \"10:30:00\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/appointments",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"appointments"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Appointment by ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/appointments/{{appointmentId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"appointments",
+						"{{appointmentId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Appointments with Filters",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/appointments?patientId={{patientId}}&doctorId={{doctorId}}&date=2026-04-20&status=REQUESTED&page=0&size=10",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"appointments"
+					],
+					"query": [
+						{
+							"key": "patientId",
+							"value": "{{patientId}}"
+						},
+						{
+							"key": "doctorId",
+							"value": "{{doctorId}}"
+						},
+						{
+							"key": "date",
+							"value": "2026-04-20"
+						},
+						{
+							"key": "status",
+							"value": "REQUESTED"
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Appointment Status",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"status\": \"CONFIRMED\",\n    \"cancellationReason\": null\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/appointments/{{appointmentId}}/status",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"appointments",
+						"{{appointmentId}}",
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Cancel Appointment",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"reason\": \"Patient requested cancellation\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/appointments/{{appointmentId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"appointments",
+						"{{appointmentId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add to Waitlist",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"patientId\": \"{{patientId}}\",\n    \"doctorId\": \"{{doctorId}}\",\n    \"preferredDate\": \"2026-04-21\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/appointments/{{appointmentId}}/waitlist",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"appointments",
+						"{{appointmentId}}",
+						"waitlist"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8084",
+			"type": "string"
+		},
+		{
+			"key": "patientId",
+			"value": "REPLACE_WITH_UUID",
+			"type": "string"
+		},
+		{
+			"key": "doctorId",
+			"value": "REPLACE_WITH_UUID",
+			"type": "string"
+		},
+		{
+			"key": "appointmentId",
+			"value": "REPLACE_WITH_UUID",
+			"type": "string"
+		}
+	]
+}
