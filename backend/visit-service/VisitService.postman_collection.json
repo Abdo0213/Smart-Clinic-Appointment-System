@@ -1,0 +1,270 @@
+{
+	"info": {
+		"_postman_id": "b1a2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d",
+		"name": "Visit Service API",
+		"description": "Collection for testing Smart Clinic Visit Service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create Visit",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"appointmentId\": \"f6g7h8i9-7104-4431-b3b3-1f1f1f1f1f1f\",\n  \"chiefComplaint\": \"Chest pain, shortness of breath\",\n  \"examinationFindings\": \"BP 140/90, HR 88 bpm, clear lungs\",\n  \"assessment\": \"Hypertension stage 2\",\n  \"plan\": \"Lifestyle modification + Amlodipine 5mg daily\",\n  \"icd10Codes\": \"I10\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/visits",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"visits"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Visit by ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/visits/{{visitId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"visits",
+						"{{visitId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Visits",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/visits?patientId=b2c3d4e5-7104-4431-b3b3-1f1f1f1f1f1f&doctorId=d4e5f6g7-7104-4431-b3b3-1f1f1f1f1f1f",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"visits"
+					],
+					"query": [
+						{
+							"key": "patientId",
+							"value": "b2c3d4e5-7104-4431-b3b3-1f1f1f1f1f1f"
+						},
+						{
+							"key": "doctorId",
+							"value": "d4e5f6g7-7104-4431-b3b3-1f1f1f1f1f1f"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Visit",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"appointmentId\": \"f6g7h8i9-7104-4431-b3b3-1f1f1f1f1f1f\",\n  \"chiefComplaint\": \"Updated: Chest pain, shortness of breath\",\n  \"examinationFindings\": \"Updated: BP 140/90\",\n  \"assessment\": \"Updated: Hypertension stage 2\",\n  \"plan\": \"Updated: Lifestyle modification\",\n  \"icd10Codes\": \"I10\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/visits/{{visitId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"visits",
+						"{{visitId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Sign Visit",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"additionalItems\": [\n    {\n      \"description\": \"X-Ray - Chest\",\n      \"quantity\": 1,\n      \"unitPrice\": 50.0\n    },\n    {\n      \"description\": \"Wound Dressing\",\n      \"quantity\": 1,\n      \"unitPrice\": 20.0\n    }\n  ]\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/visits/{{visitId}}/sign",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"visits",
+						"{{visitId}}",
+						"sign"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Amend Visit",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"appointmentId\": \"f6g7h8i9-7104-4431-b3b3-1f1f1f1f1f1f\",\n  \"chiefComplaint\": \"Amendment: Adding more details\",\n  \"assessment\": \"Stable hypertension\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/visits/{{visitId}}/amend",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"visits",
+						"{{visitId}}",
+						"amend"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Issue Prescription",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"medicationName\": \"Amlodipine\",\n  \"dosage\": \"5mg\",\n  \"frequency\": \"Once daily\",\n  \"durationDays\": 30,\n  \"notes\": \"Take in the morning with food\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/visits/{{visitId}}/prescriptions",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"visits",
+						"{{visitId}}",
+						"prescriptions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Schedule Follow-up",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"slotDate\": \"2026-05-20\",\n  \"slotStart\": \"10:00\",\n  \"slotEnd\": \"10:30\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/visits/{{visitId}}/follow-up",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"visits",
+						"{{visitId}}",
+						"follow-up"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Billing Options",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/visits/billing-options",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"visits",
+						"billing-options"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8085",
+			"type": "string"
+		},
+		{
+			"key": "visitId",
+			"value": "h8i9j0k1-...",
+			"type": "string"
+		}
+	]
+}
