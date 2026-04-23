@@ -14,7 +14,9 @@ import java.time.LocalTime;
 @Builder
 public class BreakDTO {
     @NotNull(message = "Break start time is required")
+    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "HH:mm:ss")
     private LocalTime breakStart;
     @NotNull(message = "Break end time is required")
+    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "HH:mm:ss")
     private LocalTime breakEnd;
 }

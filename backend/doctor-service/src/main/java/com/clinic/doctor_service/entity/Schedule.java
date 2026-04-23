@@ -37,6 +37,9 @@ public class Schedule {
     @Column(nullable = false)
     private Integer slotDuration; // in minutes
 
+    @Column(nullable = false)
+    private Double price;
+
     @Builder.Default
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ScheduleBreak> breaks = new ArrayList<>();

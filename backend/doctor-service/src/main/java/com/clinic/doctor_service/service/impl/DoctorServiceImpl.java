@@ -154,6 +154,7 @@ public class DoctorServiceImpl implements DoctorService {
                         .start(current)
                         .end(end)
                         .available(!isBreak && !isBooked) // Mark as unavailable if it's a break or booked.
+                        .price(schedule.getPrice())
                         .build());
                 
                 current = end;

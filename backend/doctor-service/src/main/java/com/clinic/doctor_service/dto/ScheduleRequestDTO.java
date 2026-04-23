@@ -22,14 +22,20 @@ public class ScheduleRequestDTO {
     private Integer dayOfWeek;
 
     @NotNull(message = "Start time is required")
+    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "HH:mm:ss")
     private LocalTime startTime;
 
     @NotNull(message = "End time is required")
+    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "HH:mm:ss")
     private LocalTime endTime;
 
     @NotNull(message = "Slot duration is required")
     @Min(5)
     private Integer slotDuration;
+
+    @NotNull(message = "Price is required")
+    @Min(0)
+    private Double price;
 
     private List<BreakDTO> breaks;
 }

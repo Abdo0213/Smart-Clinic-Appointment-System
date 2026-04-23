@@ -14,9 +14,11 @@ public interface DoctorMapper {
     DoctorResponseDTO toResponseDto(Doctor doc);
 
     @Mapping(target = "doctor", ignore = true)
+    @Mapping(target = "price", source = "price")
     Schedule toEntity(ScheduleRequestDTO dto);
 
     @Mapping(target = "doctorId", source = "doctor.id")
+    @Mapping(target = "price", source = "price")
     ScheduleResponseDTO toResponseDto(Schedule schedule);
 
     ScheduleBreak toEntity(BreakDTO dto);

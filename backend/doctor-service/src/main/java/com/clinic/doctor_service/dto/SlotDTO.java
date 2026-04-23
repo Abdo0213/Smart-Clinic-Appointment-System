@@ -15,4 +15,5 @@ public class SlotDTO {
     private LocalTime start;
     private LocalTime end;
     private boolean available;
+    private Double price;
 }

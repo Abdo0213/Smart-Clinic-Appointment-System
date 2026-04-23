@@ -20,5 +20,6 @@ public class ScheduleResponseDTO {
     private LocalTime startTime;
     private LocalTime endTime;
     private Integer slotDuration;
+    private Double price;
     private List<BreakDTO> breaks;
 }
