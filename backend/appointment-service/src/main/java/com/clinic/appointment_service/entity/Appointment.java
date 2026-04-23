@@ -45,6 +45,9 @@ public class Appointment {
     @Column(nullable = false)
     private UUID bookedBy;
 
+    @Column(nullable = false)
+    private Double price;
+
     private String cancellationReason;
 
     @CreationTimestamp

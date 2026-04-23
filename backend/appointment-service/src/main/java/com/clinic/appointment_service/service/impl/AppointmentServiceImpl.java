@@ -37,6 +37,9 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Value("${services.doctor.url}")
     private String doctorServiceUrl;
 
+    @Value("${services.patient.url}")
+    private String patientServiceUrl;
+
     @Override
     @Transactional
     public AppointmentResponseDTO bookAppointment(AppointmentRequestDTO request, UUID bookedBy) {
@@ -57,6 +60,14 @@ public class AppointmentServiceImpl implements AppointmentService {
             throw new ResourceNotFoundException("Doctor not found in Doctor Service.");
         }
 
+        // 1.1 Check if Patient exists in Patient Service
+        try {
+            restTemplate.getForObject(patientServiceUrl + "/" + request.getPatientId(), Object.class);
+        } catch (Exception e) {
+            log.error("Patient Service error: {}", e.getMessage());
+            throw new ResourceNotFoundException("Patient not found in Patient Service.");
+        }
+
         // 2. Check if the slot is actually available in Doctor Service
         String slotsUrl = doctorServiceUrl + "/" + request.getDoctorId() + "/slots?date=" + request.getSlotDate();
         try {
@@ -67,49 +78,52 @@ public class AppointmentServiceImpl implements AppointmentService {
             String requestedStart = request.getSlotStart().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
             String requestedEnd = request.getSlotEnd().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
 
-            boolean isSlotValid = availability != null && availability.getSlots() != null
-                    && availability.getSlots().stream()
-                            .anyMatch(slot -> 
-                                (slot.getStart().startsWith(requestedStart)) && 
-                                (slot.getEnd().startsWith(requestedEnd)) && 
-                                slot.isAvailable());
+            // Find the matching slot to get the price
+            com.clinic.appointment_service.dto.external.AvailabilityResponseDTO.SlotDTO matchedSlot = availability.getSlots().stream()
+                    .filter(slot -> 
+                        (slot.getStart().startsWith(requestedStart)) && 
+                        (slot.getEnd().startsWith(requestedEnd)) && 
+                        slot.isAvailable())
+                    .findFirst()
+                    .orElse(null);
 
-            if (!isSlotValid) {
+            if (matchedSlot == null) {
                 throw new ValidationException("The requested slot " + requestedStart + "-" + requestedEnd + " is not available in the doctor's schedule.");
             }
-        } catch (ValidationException ve) {
-            throw ve;
+
+            Appointment appointment = appointmentMapper.toEntity(request);
+            appointment.setStatus(AppointmentStatus.REQUESTED);
+            appointment.setBookedBy(bookedBy);
+            appointment.setPrice(matchedSlot.getPrice()); // Capture and store the price at booking time
+
+            // 3. Check if slot is already booked in our Appointment Database
+            if (appointmentRepository.existsByDoctorIdAndSlotDateAndSlotStart(
+                    request.getDoctorId(), request.getSlotDate(), request.getSlotStart())) {
+                throw new ConflictException("This slot is already booked.");
+            }
+
+            // 4. Check if patient has any other overlapping appointment on this day
+            if (appointmentRepository.existsOverlappingAppointment(
+                    request.getPatientId(), request.getSlotDate(), request.getSlotStart(), request.getSlotEnd())) {
+                throw new ValidationException("Patient already has an overlapping appointment at this time.");
+            }
+
+            // 5. Check if patient already has an appointment with this doctor on this day
+            if (appointmentRepository.existsByPatientIdAndDoctorIdAndSlotDateAndStatusNot(
+                    request.getPatientId(), request.getDoctorId(), request.getSlotDate(), AppointmentStatus.CANCELLED)) {
+                throw new ValidationException("Patient already has an appointment with this doctor on this day.");
+            }
+
+            Appointment saved = appointmentRepository.save(appointment);
+            return appointmentMapper.toResponseDto(saved);
+
+        } catch (ValidationException | ConflictException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Slot check error calling {}: {}", slotsUrl, e.getMessage());
             throw new ValidationException(
                     "Could not verify slot availability with Doctor Service. Error: " + e.getMessage());
         }
-
-        // 3. Check if slot is already booked in our Appointment Database
-        if (appointmentRepository.existsByDoctorIdAndSlotDateAndSlotStart(
-                request.getDoctorId(), request.getSlotDate(), request.getSlotStart())) {
-            throw new ConflictException("This slot is already booked.");
-        }
-
-        // 4. Check if patient has any other overlapping appointment on this day
-        if (appointmentRepository.existsOverlappingAppointment(
-                request.getPatientId(), request.getSlotDate(), request.getSlotStart(), request.getSlotEnd())) {
-            throw new ValidationException("Patient already has an overlapping appointment at this time.");
-        }
-
-        // 5. Check if patient already has an appointment with this doctor on this day
-        if (appointmentRepository.existsByPatientIdAndDoctorIdAndSlotDateAndStatusNot(
-                request.getPatientId(), request.getDoctorId(), request.getSlotDate(), AppointmentStatus.CANCELLED)) {
-            throw new ValidationException("Patient already has an appointment with this doctor on this day.");
-        }
-
-        Appointment appointment = appointmentMapper.toEntity(request);
-        appointment.setStatus(AppointmentStatus.REQUESTED);
-        appointment.setBookedBy(bookedBy);
-
-        Appointment saved = appointmentRepository.save(appointment);
-
-        return appointmentMapper.toResponseDto(saved);
     }
 
     @Override

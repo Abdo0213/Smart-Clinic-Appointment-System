@@ -18,6 +18,7 @@ public class AppointmentResponseDTO {
     private LocalTime slotStart;
     private LocalTime slotEnd;
     private AppointmentStatus status;
+    private Double price;
     private UUID bookedBy;
     private String cancellationReason;
     private LocalDateTime createdAt;

@@ -17,6 +17,7 @@ public interface AppointmentMapper {
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "bookedBy", ignore = true)
     @Mapping(target = "cancellationReason", ignore = true)
+    @Mapping(target = "price", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     Appointment toEntity(AppointmentRequestDTO dto);

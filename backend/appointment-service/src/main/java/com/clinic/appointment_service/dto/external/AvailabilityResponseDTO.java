@@ -15,5 +15,6 @@ public class AvailabilityResponseDTO {
         private String start;
         private String end;
         private boolean available;
+        private Double price;
     }
 }
