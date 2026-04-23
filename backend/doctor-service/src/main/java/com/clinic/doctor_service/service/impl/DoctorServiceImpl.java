@@ -150,11 +150,16 @@ public class DoctorServiceImpl implements DoctorService {
                 // Check if slot is already booked
                 boolean isBooked = isSlotBooked(current, end, bookedAppointments);
                 
+                String reason = null;
+                if (isBreak) reason = "BREAK";
+                else if (isBooked) reason = "BOOKED";
+
                 slots.add(SlotDTO.builder()
                         .start(current)
                         .end(end)
-                        .available(!isBreak && !isBooked) // Mark as unavailable if it's a break or booked.
+                        .available(!isBreak && !isBooked)
                         .price(schedule.getPrice())
+                        .reason(reason)
                         .build());
                 
                 current = end;

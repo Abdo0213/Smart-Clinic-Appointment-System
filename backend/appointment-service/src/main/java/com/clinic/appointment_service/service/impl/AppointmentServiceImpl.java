@@ -78,17 +78,21 @@ public class AppointmentServiceImpl implements AppointmentService {
             String requestedStart = request.getSlotStart().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
             String requestedEnd = request.getSlotEnd().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
 
-            // Find the matching slot to get the price
+            // Find the matching slot
             com.clinic.appointment_service.dto.external.AvailabilityResponseDTO.SlotDTO matchedSlot = availability.getSlots().stream()
                     .filter(slot -> 
                         (slot.getStart().startsWith(requestedStart)) && 
-                        (slot.getEnd().startsWith(requestedEnd)) && 
-                        slot.isAvailable())
+                        (slot.getEnd().startsWith(requestedEnd)))
                     .findFirst()
                     .orElse(null);
 
             if (matchedSlot == null) {
-                throw new ValidationException("The requested slot " + requestedStart + "-" + requestedEnd + " is not available in the doctor's schedule.");
+                throw new ValidationException("The requested slot " + requestedStart + "-" + requestedEnd + " does not exist in the doctor's schedule.");
+            }
+
+            if (!matchedSlot.isAvailable()) {
+                String reason = matchedSlot.getReason() != null ? matchedSlot.getReason().toLowerCase() : "unavailable";
+                throw new ValidationException("The requested slot " + requestedStart + "-" + requestedEnd + " is not available because it is a " + reason + ".");
             }
 
             Appointment appointment = appointmentMapper.toEntity(request);

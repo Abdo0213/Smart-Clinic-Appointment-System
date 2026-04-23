@@ -16,4 +16,5 @@ public class SlotDTO {
     private LocalTime end;
     private boolean available;
     private Double price;
+    private String reason; // e.g., "BOOKED" or "BREAK"
 }
