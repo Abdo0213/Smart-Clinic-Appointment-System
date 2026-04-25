@@ -1,0 +1,12 @@
+C:\Users\dell\New folder\Smart-Clinic-Appointment-System\backend\AdminService\Admin.Domain\bin\Debug\net8.0\Admin.Domain.deps.json
+C:\Users\dell\New folder\Smart-Clinic-Appointment-System\backend\AdminService\Admin.Domain\bin\Debug\net8.0\Admin.Domain.dll
+C:\Users\dell\New folder\Smart-Clinic-Appointment-System\backend\AdminService\Admin.Domain\bin\Debug\net8.0\Admin.Domain.pdb
+C:\Users\dell\New folder\Smart-Clinic-Appointment-System\backend\AdminService\Admin.Domain\obj\Debug\net8.0\Admin.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\dell\New folder\Smart-Clinic-Appointment-System\backend\AdminService\Admin.Domain\obj\Debug\net8.0\Admin.Domain.AssemblyInfoInputs.cache
+C:\Users\dell\New folder\Smart-Clinic-Appointment-System\backend\AdminService\Admin.Domain\obj\Debug\net8.0\Admin.Domain.AssemblyInfo.cs
+C:\Users\dell\New folder\Smart-Clinic-Appointment-System\backend\AdminService\Admin.Domain\obj\Debug\net8.0\Admin.Domain.csproj.CoreCompileInputs.cache
+C:\Users\dell\New folder\Smart-Clinic-Appointment-System\backend\AdminService\Admin.Domain\obj\Debug\net8.0\Admin.Domain.sourcelink.json
+C:\Users\dell\New folder\Smart-Clinic-Appointment-System\backend\AdminService\Admin.Domain\obj\Debug\net8.0\Admin.Domain.dll
+C:\Users\dell\New folder\Smart-Clinic-Appointment-System\backend\AdminService\Admin.Domain\obj\Debug\net8.0\refint\Admin.Domain.dll
+C:\Users\dell\New folder\Smart-Clinic-Appointment-System\backend\AdminService\Admin.Domain\obj\Debug\net8.0\Admin.Domain.pdb
+C:\Users\dell\New folder\Smart-Clinic-Appointment-System\backend\AdminService\Admin.Domain\obj\Debug\net8.0\ref\Admin.Domain.dll
