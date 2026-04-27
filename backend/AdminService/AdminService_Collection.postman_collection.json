@@ -1,0 +1,305 @@
+{
+	"info": {
+		"_postman_id": "a73d3e5d-6f58-4ee7-9d0a-fd2fed780170",
+		"name": "Smart Clinic - Admin Service",
+		"description": "Collection to test the Admin microservice of the Smart Clinic Appointment System.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{admin_url}}/admin/users?role=ADMIN&isActive=true&page=0&size=20",
+							"host": [
+								"{{admin_url}}"
+							],
+							"path": [
+								"admin",
+								"users"
+							],
+							"query": [
+								{
+									"key": "role",
+									"value": "ADMIN"
+								},
+								{
+									"key": "isActive",
+									"value": "true"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reassign Role",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"role\": \"DOCTOR\"\n}"
+						},
+						"url": {
+							"raw": "{{admin_url}}/admin/users/:userId/role",
+							"host": [
+								"{{admin_url}}"
+							],
+							"path": [
+								"admin",
+								"users",
+								":userId",
+								"role"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "123"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Audit Logs",
+			"item": [
+				{
+					"name": "Create Audit Log",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"actorId\": \"admin_01\",\n    \"actorRole\": \"ADMIN\",\n    \"service\": \"AppointmentService\",\n    \"action\": \"VIEW_PHI\",\n    \"entityType\": \"Patient\",\n    \"entityId\": \"pat_99\",\n    \"ipAddress\": \"127.0.0.1\"\n}"
+						},
+						"url": {
+							"raw": "{{admin_url}}/admin/audit-log",
+							"host": [
+								"{{admin_url}}"
+							],
+							"path": [
+								"admin",
+								"audit-log"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Audit Logs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{admin_url}}/admin/audit-log?actorId=admin_01&entityType=Patient&page=0&size=20",
+							"host": [
+								"{{admin_url}}"
+							],
+							"path": [
+								"admin",
+								"audit-log"
+							],
+							"query": [
+								{
+									"key": "actorId",
+									"value": "admin_01"
+								},
+								{
+									"key": "entityType",
+									"value": "Patient"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Reports",
+			"item": [
+				{
+					"name": "Appointments Report",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{admin_url}}/admin/reports/appointments?dateFrom=2024-01-01&dateTo=2024-12-31&granularity=daily",
+							"host": [
+								"{{admin_url}}"
+							],
+							"path": [
+								"admin",
+								"reports",
+								"appointments"
+							],
+							"query": [
+								{
+									"key": "dateFrom",
+									"value": "2024-01-01"
+								},
+								{
+									"key": "dateTo",
+									"value": "2024-12-31"
+								},
+								{
+									"key": "granularity",
+									"value": "daily"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Revenue Report",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{admin_url}}/admin/reports/revenue?dateFrom=2024-01-01&dateTo=2024-12-31",
+							"host": [
+								"{{admin_url}}"
+							],
+							"path": [
+								"admin",
+								"reports",
+								"revenue"
+							],
+							"query": [
+								{
+									"key": "dateFrom",
+									"value": "2024-01-01"
+								},
+								{
+									"key": "dateTo",
+									"value": "2024-12-31"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "No-Show Rate",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{admin_url}}/admin/reports/no-show-rate?dateFrom=2024-01-01&dateTo=2024-12-31",
+							"host": [
+								"{{admin_url}}"
+							],
+							"path": [
+								"admin",
+								"reports",
+								"no-show-rate"
+							],
+							"query": [
+								{
+									"key": "dateFrom",
+									"value": "2024-01-01"
+								},
+								{
+									"key": "dateTo",
+									"value": "2024-12-31"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Export Report",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{admin_url}}/admin/reports/export?reportType=appointments&dateFrom=2024-01-01&dateTo=2024-12-31",
+							"host": [
+								"{{admin_url}}"
+							],
+							"path": [
+								"admin",
+								"reports",
+								"export"
+							],
+							"query": [
+								{
+									"key": "reportType",
+									"value": "appointments"
+								},
+								{
+									"key": "dateFrom",
+									"value": "2024-01-01"
+								},
+								{
+									"key": "dateTo",
+									"value": "2024-12-31"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{jwt_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "admin_url",
+			"value": "http://localhost:8088",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "your_token_here",
+			"type": "string"
+		}
+	]
+}
