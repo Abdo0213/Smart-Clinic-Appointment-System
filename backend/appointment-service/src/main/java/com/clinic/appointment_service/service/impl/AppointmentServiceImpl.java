@@ -191,6 +191,13 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
+    public java.util.List<AppointmentResponseDTO> getAllAppointmentsWithoutPagination() {
+        return appointmentRepository.findAll().stream()
+                .map(appointmentMapper::toResponseDto)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public WaitlistResponseDTO addToWaitlist(WaitlistRequestDTO request) {
         Waitlist waitlist = appointmentMapper.toEntity(request);

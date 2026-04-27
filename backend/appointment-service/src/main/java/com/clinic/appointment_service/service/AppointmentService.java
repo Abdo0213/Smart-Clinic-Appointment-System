@@ -22,5 +22,7 @@ public interface AppointmentService {
     AppointmentResponseDTO cancelAppointment(UUID id, CancellationRequestDTO cancellationRequest, UUID cancelledBy,
             String role);
 
+    java.util.List<AppointmentResponseDTO> getAllAppointmentsWithoutPagination();
+
     WaitlistResponseDTO addToWaitlist(WaitlistRequestDTO request);
 }

@@ -46,6 +46,11 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.getAllAppointments(patientId, doctorId, date, status, pageable));
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<java.util.List<AppointmentResponseDTO>> getAllAppointmentsNoPagination() {
+        return ResponseEntity.ok(appointmentService.getAllAppointmentsWithoutPagination());
+    }
+
     @PatchMapping("/{id}/status")
     public ResponseEntity<AppointmentResponseDTO> updateStatus(
             @PathVariable UUID id,

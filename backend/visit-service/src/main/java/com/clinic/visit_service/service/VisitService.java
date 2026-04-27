@@ -16,5 +16,6 @@ public interface VisitService {
     VisitResponse amendVisit(UUID id, VisitRequest request);
     PrescriptionResponse issuePrescription(UUID visitId, PrescriptionRequest request);
     FollowUpResponse scheduleFollowUp(UUID visitId, FollowUpRequest request);
+    java.util.List<VisitResponse> getAllVisitsWithoutPagination();
     java.util.List<LineItemRequest> getBillingOptions();
 }

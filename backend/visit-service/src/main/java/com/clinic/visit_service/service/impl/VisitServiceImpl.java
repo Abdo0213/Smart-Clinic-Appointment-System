@@ -241,6 +241,13 @@ public class VisitServiceImpl implements VisitService {
     }
 
     @Override
+    public java.util.List<VisitResponse> getAllVisitsWithoutPagination() {
+        return visitRepository.findAll().stream()
+                .map(visitMapper::toResponse)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Override
     public java.util.List<LineItemRequest> getBillingOptions() {
         return java.util.List.of(
             new LineItemRequest("X-Ray - Chest", 1, java.math.BigDecimal.valueOf(50.0)),

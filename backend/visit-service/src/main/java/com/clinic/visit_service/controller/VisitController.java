@@ -45,6 +45,11 @@ public class VisitController {
         return ResponseEntity.ok(visitService.getAllVisits(patientId, doctorId, dateFrom, dateTo, pageable));
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<java.util.List<VisitResponse>> getAllVisitsNoPagination() {
+        return ResponseEntity.ok(visitService.getAllVisitsWithoutPagination());
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<VisitResponse> updateVisit(@PathVariable UUID id, @Valid @RequestBody VisitRequest request) {
         return ResponseEntity.ok(visitService.updateVisit(id, request));
