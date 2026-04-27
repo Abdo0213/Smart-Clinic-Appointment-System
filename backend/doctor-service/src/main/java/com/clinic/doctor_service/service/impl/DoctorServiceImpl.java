@@ -83,7 +83,7 @@ public class DoctorServiceImpl implements DoctorService {
         schedule.setDoctor(doctor);
         
         // Validate no overlaps
-        List<Schedule> existingSchedules = scheduleRepository.findByDoctorIdAndDayOfWeek(doctorId, schedule.getDayOfWeek());
+        List<Schedule> existingSchedules = scheduleRepository.findByDoctorIdAndDate(doctorId, schedule.getDate());
         for (Schedule existing : existingSchedules) {
             if (schedule.getStartTime().isBefore(existing.getEndTime()) && 
                 schedule.getEndTime().isAfter(existing.getStartTime())) {
@@ -127,14 +127,7 @@ public class DoctorServiceImpl implements DoctorService {
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + doctorId));
         
-        int dayOfWeek = date.getDayOfWeek().getValue() % 7; // Convert to 0-6 (Sunday start if needed, or check logic)
-        // Note: java.time.DayOfWeek: 1(Mon)-7(Sun). My API: 0(Sun)-6(Sat) or similar.
-        // Assuming 0=Sunday, 1=Monday... 6=Saturday. Java: Mon=1, ..., Sat=6, Sun=7.
-        // So (date.getDayOfWeek().getValue() % 7) gives Sun=0, Mon=1, ..., Sat=6. Matches.
-
-        List<Schedule> schedules = scheduleRepository.findByDoctorId(doctorId).stream()
-                .filter(s -> s.getDayOfWeek().equals(dayOfWeek))
-                .collect(Collectors.toList());
+        List<Schedule> schedules = scheduleRepository.findByDoctorIdAndDate(doctorId, date);
 
         List<ExternalAppointmentDTO> bookedAppointments = fetchBookedAppointments(doctorId, date);
 

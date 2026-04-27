@@ -26,7 +26,7 @@ public class Schedule {
     private Doctor doctor;
 
     @Column(nullable = false)
-    private Integer dayOfWeek; // 0 (Sunday) to 6 (Saturday)
+    private java.time.LocalDate date;
 
     @Column(nullable = false)
     private LocalTime startTime;

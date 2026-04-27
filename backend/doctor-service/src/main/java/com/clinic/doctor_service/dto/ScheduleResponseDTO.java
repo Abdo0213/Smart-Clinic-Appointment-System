@@ -16,7 +16,7 @@ import java.util.UUID;
 public class ScheduleResponseDTO {
     private UUID id;
     private UUID doctorId;
-    private Integer dayOfWeek;
+    private java.time.LocalDate date;
     private LocalTime startTime;
     private LocalTime endTime;
     private Integer slotDuration;

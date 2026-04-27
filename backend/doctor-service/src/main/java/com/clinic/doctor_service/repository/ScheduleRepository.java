@@ -8,5 +8,5 @@ import java.util.UUID;
 
 public interface ScheduleRepository extends JpaRepository<Schedule, UUID> {
     List<Schedule> findByDoctorId(UUID doctorId);
-    List<Schedule> findByDoctorIdAndDayOfWeek(UUID doctorId, Integer dayOfWeek);
+    List<Schedule> findByDoctorIdAndDate(UUID doctorId, java.time.LocalDate date);
 }

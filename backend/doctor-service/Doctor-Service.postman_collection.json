@@ -123,7 +123,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"dayOfWeek\": 1,\n    \"startTime\": \"09:00:00\",\n    \"endTime\": \"17:00:00\",\n    \"slotDuration\": 30,\n    \"breaks\": [\n        {\n            \"breakStart\": \"12:00:00\",\n            \"breakEnd\": \"13:00:00\"\n        }\n    ]\n}",
+							"raw": "{\n    \"date\": \"2026-04-27\",\n    \"startTime\": \"09:00:00\",\n    \"endTime\": \"17:00:00\",\n    \"slotDuration\": 30,\n    \"price\": 100.0,\n    \"breaks\": [\n        {\n            \"breakStart\": \"12:00:00\",\n            \"breakEnd\": \"13:00:00\"\n        }\n    ]\n}",
 							"options": {
 								"raw": {
 									"language": "json"

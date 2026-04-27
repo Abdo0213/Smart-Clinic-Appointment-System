@@ -17,9 +17,9 @@ import java.util.List;
 @Builder
 public class ScheduleRequestDTO {
 
-    @NotNull(message = "Day of week is required")
-    @Min(0) @Max(6)
-    private Integer dayOfWeek;
+    @NotNull(message = "Date is required")
+    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "yyyy-MM-dd")
+    private java.time.LocalDate date;
 
     @NotNull(message = "Start time is required")
     @com.fasterxml.jackson.annotation.JsonFormat(pattern = "HH:mm:ss")
