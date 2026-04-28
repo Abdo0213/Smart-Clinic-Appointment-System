@@ -14,17 +14,26 @@ public class AdminController : ControllerBase
 {
     private readonly IAppointmentApiClient _appointmentApiClient;
     private readonly IBillingApiClient _billingApiClient;
+    private readonly IVisitApiClient _visitApiClient;
+    private readonly IDoctorApiClient _doctorApiClient;
+    private readonly IPatientApiClient _patientApiClient;
     private readonly AdminDbContext _dbContext;
     private readonly IReportStorageService _reportStorage;
 
     public AdminController(
         IAppointmentApiClient appointmentApiClient, 
         IBillingApiClient billingApiClient,
+        IVisitApiClient visitApiClient,
+        IDoctorApiClient doctorApiClient,
+        IPatientApiClient patientApiClient,
         AdminDbContext dbContext,
         IReportStorageService reportStorage)
     {
         _appointmentApiClient = appointmentApiClient;
         _billingApiClient = billingApiClient;
+        _visitApiClient = visitApiClient;
+        _doctorApiClient = doctorApiClient;
+        _patientApiClient = patientApiClient;
         _dbContext = dbContext;
         _reportStorage = reportStorage;
     }
@@ -140,7 +149,63 @@ public class AdminController : ControllerBase
             TotalBilled = invoices.Sum(i => i.TotalAmount),
             TotalCollected = invoices.Where(i => i.Status == "PAID").Sum(i => i.TotalAmount),
             TotalWaived = invoices.Where(i => i.Status == "WAIVED").Sum(i => i.TotalAmount),
-            Pending = invoices.Where(i => i.Status == "PENDING").Sum(i => i.TotalAmount)
+            Pending = invoices.Where(i => i.Status == "PENDING").Sum(i => i.TotalAmount),
+            AverageInvoiceAmount = invoices.Any() ? invoices.Average(i => i.TotalAmount) : 0
+        };
+
+        return Ok(report);
+    }
+
+    // GET /admin/reports/visits
+    [HttpGet("reports/visits")]
+    public async Task<IActionResult> GetVisitsReport([FromQuery] string? dateFrom, [FromQuery] string? dateTo, [FromQuery] string? doctorId)
+    {
+        var response = await _visitApiClient.GetVisitsAsync(dateFrom, dateTo, doctorId);
+        var visits = response?.Content ?? new List<VisitDto>();
+
+        var report = new VisitsReportResponse
+        {
+            Period = new PeriodDto { From = dateFrom ?? "all time", To = dateTo ?? "all time" },
+            TotalVisits = visits.Count,
+            SignedVisits = visits.Count(v => v.IsSigned),
+            UnsignedVisits = visits.Count(v => !v.IsSigned)
+        };
+
+        return Ok(report);
+    }
+
+    // GET /admin/reports/doctors
+    [HttpGet("reports/doctors")]
+    public async Task<IActionResult> GetDoctorsReport([FromQuery] string? specialization)
+    {
+        var response = await _doctorApiClient.GetDoctorsAsync(specialization);
+        var doctors = response?.Content ?? new List<DoctorDto>();
+
+        var report = new DoctorsReportResponse
+        {
+            TotalDoctors = doctors.Count,
+            ActiveDoctors = doctors.Count(d => d.IsActive),
+            BySpecialization = doctors.GroupBy(d => d.Specialization)
+                .Select(g => new SpecializationCount { Specialization = g.Key, Count = g.Count() })
+                .ToList()
+        };
+
+        return Ok(report);
+    }
+
+    // GET /admin/reports/patients
+    [HttpGet("reports/patients")]
+    public async Task<IActionResult> GetPatientsReport()
+    {
+        var response = await _patientApiClient.GetPatientsAsync();
+        var patients = response?.Content ?? new List<PatientDto>();
+
+        var report = new PatientsReportResponse
+        {
+            TotalPatients = patients.Count,
+            ByGender = patients.GroupBy(p => p.Gender)
+                .Select(g => new GenderCount { Gender = g.Key, Count = g.Count() })
+                .ToList()
         };
 
         return Ok(report);
@@ -172,22 +237,59 @@ public class AdminController : ControllerBase
             var response = await _appointmentApiClient.GetAppointmentsAsync(dateFrom, dateTo, null);
             var appointments = response?.Content ?? new List<AppointmentDto>();
 
-            csv.AppendLine("Id,DoctorId,Status");
+            csv.AppendLine("Id,DoctorId,Status,CreatedAt");
             foreach (var a in appointments)
-                csv.AppendLine($"{a.Id},{a.DoctorId},{a.Status}");
+                csv.AppendLine($"{a.Id},{a.DoctorId},{a.Status},{a.CreatedAt:yyyy-MM-dd HH:mm:ss}");
         }
         else if (reportType == "revenue")
         {
             var response = await _billingApiClient.GetInvoicesAsync(dateFrom, dateTo);
             var invoices = response?.Content ?? new List<InvoiceDto>();
 
-            csv.AppendLine("Id,Status,TotalAmount");
+            csv.AppendLine("Id,Status,TotalAmount,CreatedAt");
             foreach (var i in invoices)
-                csv.AppendLine($"{i.Id},{i.Status},{i.TotalAmount}");
+                csv.AppendLine($"{i.Id},{i.Status},{i.TotalAmount},{i.CreatedAt:yyyy-MM-dd HH:mm:ss}");
+        }
+        else if (reportType == "visits")
+        {
+            var response = await _visitApiClient.GetVisitsAsync(dateFrom, dateTo, null);
+            var visits = response?.Content ?? new List<VisitDto>();
+
+            csv.AppendLine("Id,DoctorId,PatientId,IsSigned,CreatedAt");
+            foreach (var v in visits)
+                csv.AppendLine($"{v.Id},{v.DoctorId},{v.PatientId},{v.IsSigned},{v.CreatedAt:yyyy-MM-dd HH:mm:ss}");
+        }
+        else if (reportType == "doctors")
+        {
+            var response = await _doctorApiClient.GetDoctorsAsync(null);
+            var doctors = response?.Content ?? new List<DoctorDto>();
+
+            csv.AppendLine("Id,Specialization,IsActive,CreatedAt");
+            foreach (var d in doctors)
+                csv.AppendLine($"{d.Id},{d.Specialization},{d.IsActive},{d.CreatedAt:yyyy-MM-dd HH:mm:ss}");
+        }
+        else if (reportType == "patients")
+        {
+            var response = await _patientApiClient.GetPatientsAsync();
+            var patients = response?.Content ?? new List<PatientDto>();
+
+            csv.AppendLine("Id,Gender,CreatedAt");
+            foreach (var p in patients)
+                csv.AppendLine($"{p.Id},{p.Gender},{p.CreatedAt:yyyy-MM-dd HH:mm:ss}");
+        }
+        else if (reportType == "audit-log")
+        {
+            var query = _dbContext.AuditLogs.AsQueryable();
+            // Basic date filtering for local logs if needed
+            var logs = await query.OrderByDescending(a => a.OccurredAt).ToListAsync();
+
+            csv.AppendLine("Id,ActorId,Service,Action,EntityType,EntityId,OccurredAt");
+            foreach (var l in logs)
+                csv.AppendLine($"{l.Id},{l.ActorId},{l.Service},{l.Action},{l.EntityType},{l.EntityId},{l.OccurredAt:yyyy-MM-dd HH:mm:ss}");
         }
         else
         {
-            return BadRequest(new { message = $"Unknown reportType '{reportType}'. Valid values: appointments, revenue" });
+            return BadRequest(new { message = $"Unknown reportType '{reportType}'. Valid values: appointments, revenue, visits, doctors, patients, audit-log" });
         }
 
         var downloadUrl = await _reportStorage.UploadReportAsync(fileName, csv.ToString());

@@ -43,12 +43,19 @@ The entry point of the service.
 - **Logic**: Stores granular logs of user actions. Supports filtering by actor, entity type, and action with built-in pagination.
 
 ### 📈 Real-time Analytics
-- **Endpoints**: `/admin/reports/appointments`, `/revenue`, `/no-show-rate`
-- **Logic**: Automatically fetches raw data from Java microservices and performs on-the-fly aggregation (e.g., calculating Doctor Utilization % and Revenue Sums).
+- **Endpoints**: 
+  - `/admin/reports/appointments`: Breakdown of appointment statuses and doctor utilization.
+  - `/admin/reports/revenue`: Financial summaries including total billed, collected, waived, and pending amounts.
+  - `/admin/reports/visits`: Overview of visit volume and signing status.
+  - `/admin/reports/doctors`: Statistics on active doctors and specializations.
+  - `/admin/reports/patients`: Patient demographics and total counts.
+  - `/admin/reports/no-show-rate`: Calculation of appointment no-show percentages.
+- **Logic**: Automatically fetches raw data from Java microservices (Ports 8081-8087) and performs on-the-fly aggregation.
 
 ### 📄 CSV Exporting
 - **Endpoint**: `GET /admin/reports/export`
 - **Logic**: Generates CSV files from report data and uploads them to **Amazon S3**. Returns a pre-signed URL valid for 1 hour.
+- **Supported Types**: `appointments`, `revenue`, `visits`, `doctors`, `patients`, and `audit-log`.
 - **Note**: If AWS keys are not provided, the service automatically enters **Mock Mode** to prevent crashes.
 
 ---

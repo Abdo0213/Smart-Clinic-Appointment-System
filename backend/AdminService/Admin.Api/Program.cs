@@ -27,6 +27,21 @@ builder.Services.AddHttpClient<IBillingApiClient, BillingApiClient>(client =>
     client.BaseAddress = new Uri("http://localhost:8087");
 });
 
+builder.Services.AddHttpClient<IVisitApiClient, VisitApiClient>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:8085");
+});
+
+builder.Services.AddHttpClient<IDoctorApiClient, DoctorApiClient>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:8082");
+});
+
+builder.Services.AddHttpClient<IPatientApiClient, PatientApiClient>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:8083");
+});
+
 // Configure AWS S3
 var awsOptions = builder.Configuration.GetSection("AWS");
 var accessKey = awsOptions["AccessKey"];
