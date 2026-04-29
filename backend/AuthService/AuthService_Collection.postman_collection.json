@@ -75,6 +75,88 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get All Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{auth_url}}/api/users",
+							"host": [
+								"{{auth_url}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User By Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{auth_url}}/api/users/:id",
+							"host": [
+								"{{auth_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "user_id_here"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update User",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"updated@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{auth_url}}/api/users/:id",
+							"host": [
+								"{{auth_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "user_id_here"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"variable": [
