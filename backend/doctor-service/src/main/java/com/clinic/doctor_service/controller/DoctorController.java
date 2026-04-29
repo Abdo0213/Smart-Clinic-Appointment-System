@@ -45,6 +45,12 @@ public class DoctorController {
         return ResponseEntity.ok(doctorService.updateDoctor(id, request));
     }
 
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<Void> updateDoctorStatus(@PathVariable UUID id, @RequestParam boolean isActive) {
+        doctorService.updateDoctorStatus(id, isActive);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/{id}/schedules")
     public ResponseEntity<ScheduleResponseDTO> createSchedule(
             @PathVariable UUID id,

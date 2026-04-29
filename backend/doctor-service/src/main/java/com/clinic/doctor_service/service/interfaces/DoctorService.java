@@ -13,6 +13,7 @@ public interface DoctorService {
     DoctorResponseDTO getDoctorById(UUID id);
     Page<DoctorResponseDTO> getAllDoctors(String specialization, Pageable pageable);
     DoctorResponseDTO updateDoctor(UUID id, DoctorRequestDTO request);
+    void updateDoctorStatus(UUID id, boolean isActive);
     
     ScheduleResponseDTO createSchedule(UUID doctorId, ScheduleRequestDTO request);
     List<ScheduleResponseDTO> getSchedulesByDoctorId(UUID doctorId);

@@ -75,6 +75,15 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional
+    public void updateDoctorStatus(UUID id, boolean isActive) {
+        Doctor doctor = doctorRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + id));
+        doctor.setActive(isActive);
+        doctorRepository.save(doctor);
+    }
+
+    @Override
+    @Transactional
     public ScheduleResponseDTO createSchedule(UUID doctorId, ScheduleRequestDTO request) {
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + doctorId));
