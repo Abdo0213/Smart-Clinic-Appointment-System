@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -49,16 +48,25 @@ public class DoctorServiceImpl implements DoctorService {
     public DoctorResponseDTO getDoctorById(UUID id) {
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + id));
+        System.out.println("DEBUG: Doctor ID: " + id + ", isActive: " + doctor.isActive());
         return doctorMapper.toResponseDto(doctor);
     }
 
     @Override
-    public Page<DoctorResponseDTO> getAllDoctors(String specialization, Pageable pageable) {
+    public Page<DoctorResponseDTO> getAllDoctors(String specialization, Boolean isActive, Pageable pageable) {
         Page<Doctor> doctors;
-        if (specialization != null && !specialization.isEmpty()) {
-            doctors = doctorRepository.findBySpecializationContainingIgnoreCaseAndIsActiveTrue(specialization, pageable);
+        boolean hasSpecialization = specialization != null && !specialization.isEmpty();
+        boolean hasIsActive = isActive != null;
+
+        if (hasSpecialization && hasIsActive) {
+            doctors = doctorRepository.findBySpecializationContainingIgnoreCaseAndActive(specialization, isActive,
+                    pageable);
+        } else if (hasSpecialization) {
+            doctors = doctorRepository.findBySpecializationContainingIgnoreCase(specialization, pageable);
+        } else if (hasIsActive) {
+            doctors = doctorRepository.findByActive(isActive, pageable);
         } else {
-            doctors = doctorRepository.findByIsActiveTrue(pageable);
+            doctors = doctorRepository.findAll(pageable);
         }
         return doctors.map(doctorMapper::toResponseDto);
     }
@@ -87,16 +95,17 @@ public class DoctorServiceImpl implements DoctorService {
     public ScheduleResponseDTO createSchedule(UUID doctorId, ScheduleRequestDTO request) {
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + doctorId));
-        
+
         Schedule schedule = doctorMapper.toEntity(request);
         schedule.setDoctor(doctor);
-        
+
         // Validate no overlaps
         List<Schedule> existingSchedules = scheduleRepository.findByDoctorIdAndDate(doctorId, schedule.getDate());
         for (Schedule existing : existingSchedules) {
-            if (schedule.getStartTime().isBefore(existing.getEndTime()) && 
-                schedule.getEndTime().isAfter(existing.getStartTime())) {
-                throw new ScheduleConflictException("Selected schedule overlaps with an existing schedule for this doctor on the same day.");
+            if (schedule.getStartTime().isBefore(existing.getEndTime()) &&
+                    schedule.getEndTime().isAfter(existing.getStartTime())) {
+                throw new ScheduleConflictException(
+                        "Selected schedule overlaps with an existing schedule for this doctor on the same day.");
             }
         }
 
@@ -123,11 +132,11 @@ public class DoctorServiceImpl implements DoctorService {
     public void deleteSchedule(UUID doctorId, UUID scheduleId) {
         Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Schedule not found with id: " + scheduleId));
-        
+
         if (!schedule.getDoctor().getId().equals(doctorId)) {
             throw new RuntimeException("Schedule does not belong to this doctor");
         }
-        
+
         scheduleRepository.delete(schedule);
     }
 
@@ -135,7 +144,7 @@ public class DoctorServiceImpl implements DoctorService {
     public SlotResponseDTO getAvailableSlots(UUID doctorId, LocalDate date) {
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + doctorId));
-        
+
         List<Schedule> schedules = scheduleRepository.findByDoctorIdAndDate(doctorId, date);
 
         List<ExternalAppointmentDTO> bookedAppointments = fetchBookedAppointments(doctorId, date);
@@ -143,18 +152,20 @@ public class DoctorServiceImpl implements DoctorService {
         List<SlotDTO> slots = new ArrayList<>();
         for (Schedule schedule : schedules) {
             LocalTime current = schedule.getStartTime();
-            while (current.plusMinutes(schedule.getSlotDuration()).isBefore(schedule.getEndTime()) || 
-                   current.plusMinutes(schedule.getSlotDuration()).equals(schedule.getEndTime())) {
-                
+            while (current.plusMinutes(schedule.getSlotDuration()).isBefore(schedule.getEndTime()) ||
+                    current.plusMinutes(schedule.getSlotDuration()).equals(schedule.getEndTime())) {
+
                 LocalTime end = current.plusMinutes(schedule.getSlotDuration());
                 boolean isBreak = isDuringBreak(current, end, schedule.getBreaks());
-                
+
                 // Check if slot is already booked
                 boolean isBooked = isSlotBooked(current, end, bookedAppointments);
-                
+
                 String reason = null;
-                if (isBreak) reason = "BREAK";
-                else if (isBooked) reason = "BOOKED";
+                if (isBreak)
+                    reason = "BREAK";
+                else if (isBooked)
+                    reason = "BOOKED";
 
                 slots.add(SlotDTO.builder()
                         .start(current)
@@ -163,7 +174,7 @@ public class DoctorServiceImpl implements DoctorService {
                         .price(schedule.getPrice())
                         .reason(reason)
                         .build());
-                
+
                 current = end;
             }
         }
@@ -176,7 +187,8 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     private boolean isDuringBreak(LocalTime start, LocalTime end, List<ScheduleBreak> breaks) {
-        if (breaks == null) return false;
+        if (breaks == null)
+            return false;
         for (ScheduleBreak b : breaks) {
             // If the slot overlaps with any break
             if (start.isBefore(b.getBreakEnd()) && end.isAfter(b.getBreakStart())) {
@@ -192,12 +204,12 @@ public class DoctorServiceImpl implements DoctorService {
                 .queryParam("date", date)
                 .toUriString();
 
-
         try {
             // We use a custom response wrapper or Map to get the content from the Page
             java.util.Map<String, Object> response = restTemplate.getForObject(url, java.util.Map.class);
             if (response != null && response.get("content") != null) {
-                List<java.util.Map<String, Object>> content = (List<java.util.Map<String, Object>>) response.get("content");
+                List<java.util.Map<String, Object>> content = (List<java.util.Map<String, Object>>) response
+                        .get("content");
                 return content.stream()
                         .map(map -> {
                             ExternalAppointmentDTO dto = new ExternalAppointmentDTO();
@@ -219,7 +231,8 @@ public class DoctorServiceImpl implements DoctorService {
     private boolean isSlotBooked(LocalTime start, LocalTime end, List<ExternalAppointmentDTO> bookedAppointments) {
         for (ExternalAppointmentDTO app : bookedAppointments) {
             // Check for exact match or overlap
-            // Typically slots are fixed, so we check if this slot is the same as the booked one
+            // Typically slots are fixed, so we check if this slot is the same as the booked
+            // one
             if (start.equals(app.getSlotStart()) && end.equals(app.getSlotEnd())) {
                 return true;
             }

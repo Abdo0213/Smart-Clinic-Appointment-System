@@ -41,7 +41,8 @@ public class Doctor {
     private String phone;
 
     @Builder.Default
-    private boolean isActive = true;
+    @Column(name = "is_active")
+    private boolean active = true;
 
     @CreationTimestamp
     @Column(updatable = false)

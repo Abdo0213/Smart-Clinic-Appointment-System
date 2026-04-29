@@ -42,6 +42,11 @@ builder.Services.AddHttpClient<IPatientApiClient, PatientApiClient>(client =>
     client.BaseAddress = new Uri("http://localhost:8083");
 });
 
+builder.Services.AddHttpClient<IAuthApiClient, AuthApiClient>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:8081");
+});
+
 // Configure AWS S3
 var awsOptions = builder.Configuration.GetSection("AWS");
 var accessKey = awsOptions["AccessKey"];

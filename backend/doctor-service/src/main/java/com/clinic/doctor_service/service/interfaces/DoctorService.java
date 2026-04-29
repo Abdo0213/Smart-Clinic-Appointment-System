@@ -11,7 +11,7 @@ import java.util.UUID;
 public interface DoctorService {
     DoctorResponseDTO createDoctor(DoctorRequestDTO request);
     DoctorResponseDTO getDoctorById(UUID id);
-    Page<DoctorResponseDTO> getAllDoctors(String specialization, Pageable pageable);
+    Page<DoctorResponseDTO> getAllDoctors(String specialization, Boolean isActive, Pageable pageable);
     DoctorResponseDTO updateDoctor(UUID id, DoctorRequestDTO request);
     void updateDoctorStatus(UUID id, boolean isActive);
     

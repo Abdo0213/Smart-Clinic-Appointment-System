@@ -8,6 +8,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.UUID;
 
 public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
-    Page<Doctor> findByIsActiveTrue(Pageable pageable);
-    Page<Doctor> findBySpecializationContainingIgnoreCaseAndIsActiveTrue(String specialization, Pageable pageable);
+    Page<Doctor> findByActive(boolean active, Pageable pageable);
+
+    Page<Doctor> findBySpecializationContainingIgnoreCaseAndActive(String specialization, boolean active,
+            Pageable pageable);
+
+    Page<Doctor> findBySpecializationContainingIgnoreCase(String specialization, Pageable pageable);
 }

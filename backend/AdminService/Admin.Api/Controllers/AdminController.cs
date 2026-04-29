@@ -17,6 +17,7 @@ public class AdminController : ControllerBase
     private readonly IVisitApiClient _visitApiClient;
     private readonly IDoctorApiClient _doctorApiClient;
     private readonly IPatientApiClient _patientApiClient;
+    private readonly IAuthApiClient _authApiClient;
     private readonly AdminDbContext _dbContext;
     private readonly IReportStorageService _reportStorage;
 
@@ -26,6 +27,7 @@ public class AdminController : ControllerBase
         IVisitApiClient visitApiClient,
         IDoctorApiClient doctorApiClient,
         IPatientApiClient patientApiClient,
+        IAuthApiClient authApiClient,
         AdminDbContext dbContext,
         IReportStorageService reportStorage)
     {
@@ -34,15 +36,35 @@ public class AdminController : ControllerBase
         _visitApiClient = visitApiClient;
         _doctorApiClient = doctorApiClient;
         _patientApiClient = patientApiClient;
+        _authApiClient = authApiClient;
         _dbContext = dbContext;
         _reportStorage = reportStorage;
     }
+
     // GET /admin/users
     [HttpGet("users")]
-    public IActionResult GetUsers([FromQuery] string? role, [FromQuery] bool? isActive, [FromQuery] int page = 0, [FromQuery] int size = 20)
+    public async Task<IActionResult> GetUsers()
     {
-        // TODO: Call Auth Service to get users
-        return Ok(new { message = "Users list placeholder" });
+        var users = await _authApiClient.GetUsersAsync();
+        return Ok(users);
+    }
+
+    // GET /admin/users/{userId}
+    [HttpGet("users/{userId}")]
+    public async Task<IActionResult> GetOneUser(string userId)
+    {
+        var response = await _authApiClient.GetUserAsync(userId);
+        if (response == null || !response.IsSuccess) return NotFound();
+        return Ok(response.Content);
+    }
+
+    // PUT /admin/users/{userId}
+    [HttpPut("users/{userId}")]
+    public async Task<IActionResult> UpdateUser(string userId, [FromBody] UpdateUserDto request)
+    {
+        var response = await _authApiClient.UpdateUserAsync(userId, request);
+        if (response == null || !response.IsSuccess) return BadRequest(new { message = "Failed to update user" });
+        return Ok(response.Content);
     }
 
     // POST /admin/users/{userId}/role
@@ -220,6 +242,22 @@ public class AdminController : ControllerBase
         };
 
         return Ok(report);
+    }
+
+    [HttpGet("doctors/{doctorId}")]
+    public async Task<IActionResult> GetOneDoctor(string doctorId)
+    {
+        var response = await _doctorApiClient.GetDoctorAsync(doctorId);
+        if (response == null || !response.IsSuccess) return NotFound();
+        return Ok(response.Content);
+    }
+
+    [HttpPatch("doctors/{doctorId}/status")]
+    public async Task<IActionResult> UpdateDoctorStatus(string doctorId, [FromQuery] bool isActive)
+    {
+        var success = await _doctorApiClient.UpdateDoctorStatusAsync(doctorId, isActive);
+        if (!success) return BadRequest(new { message = "Failed to update doctor status" });
+        return NoContent();
     }
 
     // GET /admin/reports/patients

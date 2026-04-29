@@ -20,6 +20,7 @@ public class DoctorResponseDTO {
     private String specialization;
     private String bio;
     private String phone;
-    private boolean isActive;
+    @com.fasterxml.jackson.annotation.JsonProperty("isActive")
+    private boolean active;
     private LocalDateTime createdAt;
 }

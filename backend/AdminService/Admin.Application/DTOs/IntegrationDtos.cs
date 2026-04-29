@@ -50,3 +50,22 @@ public class PatientDto
     public string Gender { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
 }
+
+public class ApiResponse<T>
+{
+    public T? Content { get; set; }
+    public bool IsSuccess { get; set; }
+    public string? ErrorMessage { get; set; }
+}
+
+public class UserDto
+{
+    public string Id { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string UserName { get; set; } = string.Empty;
+}
+
+public class UpdateUserDto
+{
+    public string? Email { get; set; }
+}

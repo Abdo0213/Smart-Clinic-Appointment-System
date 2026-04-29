@@ -34,8 +34,9 @@ public class DoctorController {
     @GetMapping
     public ResponseEntity<Page<DoctorResponseDTO>> getAllDoctors(
             @RequestParam(required = false) String specialization,
+            @RequestParam(required = false) Boolean isActive,
             Pageable pageable) {
-        return ResponseEntity.ok(doctorService.getAllDoctors(specialization, pageable));
+        return ResponseEntity.ok(doctorService.getAllDoctors(specialization, isActive, pageable));
     }
 
     @PutMapping("/{id}")
@@ -49,6 +50,7 @@ public class DoctorController {
     public ResponseEntity<Void> updateDoctorStatus(@PathVariable UUID id, @RequestParam boolean isActive) {
         doctorService.updateDoctorStatus(id, isActive);
         return ResponseEntity.noContent().build();
+        // if the user service has a active also update it here
     }
 
     @PostMapping("/{id}/schedules")

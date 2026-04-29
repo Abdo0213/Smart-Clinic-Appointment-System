@@ -44,6 +44,20 @@ public class DoctorApiClient : IDoctorApiClient
         if (!response.IsSuccessStatusCode) return new PaginatedResponse<DoctorDto> { Content = new List<DoctorDto>() };
         return await response.Content.ReadFromJsonAsync<PaginatedResponse<DoctorDto>>();
     }
+
+    public async Task<ApiResponse<DoctorDto>?> GetDoctorAsync(string doctorId)
+    {
+        var response = await _httpClient.GetAsync($"/doctors/{doctorId}");
+        if (!response.IsSuccessStatusCode) return new ApiResponse<DoctorDto> { IsSuccess = false };
+        var content = await response.Content.ReadFromJsonAsync<DoctorDto>();
+        return new ApiResponse<DoctorDto> { Content = content, IsSuccess = true };
+    }
+
+    public async Task<bool> UpdateDoctorStatusAsync(string doctorId, bool isActive)
+    {
+        var response = await _httpClient.PatchAsync($"/doctors/{doctorId}/status?isActive={isActive}", null);
+        return response.IsSuccessStatusCode;
+    }
 }
 
 public class PatientApiClient : IPatientApiClient
@@ -61,5 +75,38 @@ public class PatientApiClient : IPatientApiClient
         var response = await _httpClient.GetAsync(url);
         if (!response.IsSuccessStatusCode) return new PaginatedResponse<PatientDto> { Content = new List<PatientDto>() };
         return await response.Content.ReadFromJsonAsync<PaginatedResponse<PatientDto>>();
+    }
+}
+
+public class AuthApiClient : IAuthApiClient
+{
+    private readonly HttpClient _httpClient;
+
+    public AuthApiClient(HttpClient httpClient)
+    {
+        _httpClient = httpClient;
+    }
+
+    public async Task<List<UserDto>?> GetUsersAsync()
+    {
+        var response = await _httpClient.GetAsync("/api/users");
+        if (!response.IsSuccessStatusCode) return new List<UserDto>();
+        return await response.Content.ReadFromJsonAsync<List<UserDto>>();
+    }
+
+    public async Task<ApiResponse<UserDto>?> GetUserAsync(string userId)
+    {
+        var response = await _httpClient.GetAsync($"/api/users/{userId}");
+        if (!response.IsSuccessStatusCode) return new ApiResponse<UserDto> { IsSuccess = false };
+        var content = await response.Content.ReadFromJsonAsync<UserDto>();
+        return new ApiResponse<UserDto> { Content = content, IsSuccess = true };
+    }
+
+    public async Task<ApiResponse<UserDto>?> UpdateUserAsync(string userId, object updateRequest)
+    {
+        var response = await _httpClient.PutAsJsonAsync($"/api/users/{userId}", updateRequest);
+        if (!response.IsSuccessStatusCode) return new ApiResponse<UserDto> { IsSuccess = false };
+        var content = await response.Content.ReadFromJsonAsync<UserDto>();
+        return new ApiResponse<UserDto> { Content = content, IsSuccess = true };
     }
 }
