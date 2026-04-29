@@ -16,16 +16,31 @@ public class BillingApiClient : IBillingApiClient
     public async Task<PaginatedResponse<InvoiceDto>> GetInvoicesAsync(string? dateFrom, string? dateTo)
     {
         var queryParams = new List<string>();
-        if (!string.IsNullOrEmpty(dateFrom)) queryParams.Add($"dateFrom={dateFrom}");
-        if (!string.IsNullOrEmpty(dateTo)) queryParams.Add($"dateTo={dateTo}");
-        // Request max page size for aggregation
         queryParams.Add("size=10000");
 
         var queryString = queryParams.Any() ? "?" + string.Join("&", queryParams) : string.Empty;
 
         var response = await _httpClient.GetAsync($"/billing/invoices{queryString}");
-        response.EnsureSuccessStatusCode();
+        if (!response.IsSuccessStatusCode)
+        {
+            return new PaginatedResponse<InvoiceDto> { Content = new List<InvoiceDto>() };
+        }
 
-        return await response.Content.ReadFromJsonAsync<PaginatedResponse<InvoiceDto>>() ?? new PaginatedResponse<InvoiceDto>();
+        var result = await response.Content.ReadFromJsonAsync<PaginatedResponse<InvoiceDto>>() ?? new PaginatedResponse<InvoiceDto>();
+
+        if (result.Content != null)
+        {
+            if (DateTime.TryParse(dateFrom, out var df))
+            {
+                result.Content = result.Content.Where(a => a.CreatedAt.Date >= df.Date).ToList();
+            }
+            if (DateTime.TryParse(dateTo, out var dt))
+            {
+                result.Content = result.Content.Where(a => a.CreatedAt.Date <= dt.Date).ToList();
+            }
+            result.TotalElements = result.Content.Count;
+        }
+
+        return result;
     }
 }

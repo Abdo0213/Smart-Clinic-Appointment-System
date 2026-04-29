@@ -8,6 +8,7 @@ public class AppointmentsReportResponse
     public int Cancelled { get; set; }
     public int NoShow { get; set; }
     public List<DoctorUtilization> ByDoctor { get; set; } = new();
+    public List<AppointmentDto> Records { get; set; } = new();
 }
 
 public class DoctorUtilization
@@ -26,6 +27,7 @@ public class RevenueReportResponse
     public decimal TotalWaived { get; set; }
     public decimal Pending { get; set; }
     public decimal AverageInvoiceAmount { get; set; }
+    public List<InvoiceDto> Records { get; set; } = new();
 }
 
 public class VisitsReportResponse
@@ -34,6 +36,7 @@ public class VisitsReportResponse
     public int TotalVisits { get; set; }
     public int SignedVisits { get; set; }
     public int UnsignedVisits { get; set; }
+    public List<VisitDto> Records { get; set; } = new();
 }
 
 public class DoctorsReportResponse
@@ -41,12 +44,14 @@ public class DoctorsReportResponse
     public int TotalDoctors { get; set; }
     public int ActiveDoctors { get; set; }
     public List<SpecializationCount> BySpecialization { get; set; } = new();
+    public List<DoctorDto> Records { get; set; } = new();
 }
 
 public class PatientsReportResponse
 {
     public int TotalPatients { get; set; }
     public List<GenderCount> ByGender { get; set; } = new();
+    public List<PatientDto> Records { get; set; } = new();
 }
 
 public class SpecializationCount

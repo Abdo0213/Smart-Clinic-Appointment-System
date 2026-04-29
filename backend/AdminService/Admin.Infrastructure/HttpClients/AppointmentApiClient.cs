@@ -16,8 +16,6 @@ public class AppointmentApiClient : IAppointmentApiClient
     public async Task<PaginatedResponse<AppointmentDto>> GetAppointmentsAsync(string? dateFrom, string? dateTo, string? doctorId)
     {
         var queryParams = new List<string>();
-        // Using date parameter as defined in appointment service /appointments filter
-        if (!string.IsNullOrEmpty(dateFrom)) queryParams.Add($"date={dateFrom}"); 
         if (!string.IsNullOrEmpty(doctorId)) queryParams.Add($"doctorId={doctorId}");
         // Request max page size for aggregation
         queryParams.Add("size=10000");
@@ -25,8 +23,26 @@ public class AppointmentApiClient : IAppointmentApiClient
         var queryString = queryParams.Any() ? "?" + string.Join("&", queryParams) : string.Empty;
         
         var response = await _httpClient.GetAsync($"/appointments{queryString}");
-        response.EnsureSuccessStatusCode();
+        if (!response.IsSuccessStatusCode)
+        {
+            return new PaginatedResponse<AppointmentDto> { Content = new List<AppointmentDto>() };
+        }
 
-        return await response.Content.ReadFromJsonAsync<PaginatedResponse<AppointmentDto>>() ?? new PaginatedResponse<AppointmentDto>();
+        var result = await response.Content.ReadFromJsonAsync<PaginatedResponse<AppointmentDto>>() ?? new PaginatedResponse<AppointmentDto>();
+
+        if (result.Content != null)
+        {
+            if (DateTime.TryParse(dateFrom, out var df))
+            {
+                result.Content = result.Content.Where(a => a.CreatedAt.Date >= df.Date).ToList();
+            }
+            if (DateTime.TryParse(dateTo, out var dt))
+            {
+                result.Content = result.Content.Where(a => a.CreatedAt.Date <= dt.Date).ToList();
+            }
+            result.TotalElements = result.Content.Count;
+        }
+
+        return result;
     }
 }

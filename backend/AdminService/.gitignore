@@ -5,6 +5,13 @@
 
 # dotenv files
 .env
+*/bin/
+*/obj/
+*/Debug/
+*/Release/
+**/Debug/
+**/obj/
+**/Release/
 
 # User-specific files
 *.rsuser
@@ -34,6 +41,8 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+.run/
+*.runtimeconfig.json
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/

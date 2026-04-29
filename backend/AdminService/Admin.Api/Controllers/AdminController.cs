@@ -111,6 +111,15 @@ public class AdminController : ControllerBase
         var response = await _appointmentApiClient.GetAppointmentsAsync(dateFrom, dateTo, doctorId);
         var appointments = response?.Content ?? new List<AppointmentDto>();
 
+        var doctorNames = await GetDoctorNamesAsync();
+        var patientNames = await GetPatientNamesAsync();
+
+        foreach (var a in appointments)
+        {
+            a.DoctorName = doctorNames.GetValueOrDefault(a.DoctorId, "Unknown");
+            a.PatientName = patientNames.GetValueOrDefault(a.PatientId, "Unknown");
+        }
+
         var total = appointments.Count;
         var completed = appointments.Count(a => a.Status == "COMPLETED");
         var cancelled = appointments.Count(a => a.Status == "CANCELLED");
@@ -119,6 +128,7 @@ public class AdminController : ControllerBase
         var byDoctor = appointments.GroupBy(a => a.DoctorId).Select(g => new DoctorUtilization
         {
             DoctorId = g.Key,
+            DoctorName = doctorNames.GetValueOrDefault(g.Key, "Unknown"),
             Total = g.Count(),
             UtilizationPercent = g.Count() > 0 && total > 0 ? Math.Round((double)g.Count() / total * 100, 2) : 0
         }).ToList();
@@ -130,7 +140,8 @@ public class AdminController : ControllerBase
             Completed = completed,
             Cancelled = cancelled,
             NoShow = noShow,
-            ByDoctor = byDoctor
+            ByDoctor = byDoctor,
+            Records = appointments
         };
 
         return Ok(report);
@@ -143,6 +154,12 @@ public class AdminController : ControllerBase
         var response = await _billingApiClient.GetInvoicesAsync(dateFrom, dateTo);
         var invoices = response?.Content ?? new List<InvoiceDto>();
 
+        var patientNames = await GetPatientNamesAsync();
+        foreach (var i in invoices)
+        {
+            i.PatientName = patientNames.GetValueOrDefault(i.PatientId, "Unknown");
+        }
+
         var report = new RevenueReportResponse
         {
             Period = new PeriodDto { From = dateFrom ?? "all time", To = dateTo ?? "all time" },
@@ -150,7 +167,8 @@ public class AdminController : ControllerBase
             TotalCollected = invoices.Where(i => i.Status == "PAID").Sum(i => i.TotalAmount),
             TotalWaived = invoices.Where(i => i.Status == "WAIVED").Sum(i => i.TotalAmount),
             Pending = invoices.Where(i => i.Status == "PENDING").Sum(i => i.TotalAmount),
-            AverageInvoiceAmount = invoices.Any() ? invoices.Average(i => i.TotalAmount) : 0
+            AverageInvoiceAmount = invoices.Any() ? invoices.Average(i => i.TotalAmount) : 0,
+            Records = invoices
         };
 
         return Ok(report);
@@ -163,12 +181,22 @@ public class AdminController : ControllerBase
         var response = await _visitApiClient.GetVisitsAsync(dateFrom, dateTo, doctorId);
         var visits = response?.Content ?? new List<VisitDto>();
 
+        var doctorNames = await GetDoctorNamesAsync();
+        var patientNames = await GetPatientNamesAsync();
+
+        foreach (var v in visits)
+        {
+            v.DoctorName = doctorNames.GetValueOrDefault(v.DoctorId, "Unknown");
+            v.PatientName = patientNames.GetValueOrDefault(v.PatientId, "Unknown");
+        }
+
         var report = new VisitsReportResponse
         {
             Period = new PeriodDto { From = dateFrom ?? "all time", To = dateTo ?? "all time" },
             TotalVisits = visits.Count,
             SignedVisits = visits.Count(v => v.IsSigned),
-            UnsignedVisits = visits.Count(v => !v.IsSigned)
+            UnsignedVisits = visits.Count(v => !v.IsSigned),
+            Records = visits
         };
 
         return Ok(report);
@@ -187,7 +215,8 @@ public class AdminController : ControllerBase
             ActiveDoctors = doctors.Count(d => d.IsActive),
             BySpecialization = doctors.GroupBy(d => d.Specialization)
                 .Select(g => new SpecializationCount { Specialization = g.Key, Count = g.Count() })
-                .ToList()
+                .ToList(),
+            Records = doctors
         };
 
         return Ok(report);
@@ -205,7 +234,8 @@ public class AdminController : ControllerBase
             TotalPatients = patients.Count,
             ByGender = patients.GroupBy(p => p.Gender)
                 .Select(g => new GenderCount { Gender = g.Key, Count = g.Count() })
-                .ToList()
+                .ToList(),
+            Records = patients
         };
 
         return Ok(report);
@@ -295,6 +325,19 @@ public class AdminController : ControllerBase
         var downloadUrl = await _reportStorage.UploadReportAsync(fileName, csv.ToString());
 
         return Ok(new { downloadUrl, expiresInSeconds = 3600 });
+    }
+    private async Task<Dictionary<string, string>> GetDoctorNamesAsync()
+    {
+        var response = await _doctorApiClient.GetDoctorsAsync(null);
+        var doctors = response?.Content ?? new List<DoctorDto>();
+        return doctors.ToDictionary(d => d.Id, d => $"{d.FirstName} {d.LastName}".Trim());
+    }
+
+    private async Task<Dictionary<string, string>> GetPatientNamesAsync()
+    {
+        var response = await _patientApiClient.GetPatientsAsync();
+        var patients = response?.Content ?? new List<PatientDto>();
+        return patients.ToDictionary(p => p.Id, p => $"{p.FirstName} {p.LastName}".Trim());
     }
 }
 

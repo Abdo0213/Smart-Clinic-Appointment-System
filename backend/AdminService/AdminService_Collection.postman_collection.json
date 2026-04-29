@@ -216,6 +216,79 @@
 					"response": []
 				},
 				{
+					"name": "Visits Report",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{admin_url}}/admin/reports/visits?dateFrom=2024-01-01&dateTo=2024-12-31",
+							"host": [
+								"{{admin_url}}"
+							],
+							"path": [
+								"admin",
+								"reports",
+								"visits"
+							],
+							"query": [
+								{
+									"key": "dateFrom",
+									"value": "2024-01-01"
+								},
+								{
+									"key": "dateTo",
+									"value": "2024-12-31"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Doctors Report",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{admin_url}}/admin/reports/doctors?specialization=Cardiology",
+							"host": [
+								"{{admin_url}}"
+							],
+							"path": [
+								"admin",
+								"reports",
+								"doctors"
+							],
+							"query": [
+								{
+									"key": "specialization",
+									"value": "Cardiology"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Patients Report",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{admin_url}}/admin/reports/patients",
+							"host": [
+								"{{admin_url}}"
+							],
+							"path": [
+								"admin",
+								"reports",
+								"patients"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "No-Show Rate",
 					"request": {
 						"method": "GET",

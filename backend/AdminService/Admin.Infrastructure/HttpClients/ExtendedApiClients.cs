@@ -20,7 +20,9 @@ public class VisitApiClient : IVisitApiClient
         if (!string.IsNullOrEmpty(dateTo)) url += $"&dateTo={dateTo}";
         if (!string.IsNullOrEmpty(doctorId)) url += $"&doctorId={doctorId}";
 
-        return await _httpClient.GetFromJsonAsync<PaginatedResponse<VisitDto>>(url);
+        var response = await _httpClient.GetAsync(url);
+        if (!response.IsSuccessStatusCode) return new PaginatedResponse<VisitDto> { Content = new List<VisitDto>() };
+        return await response.Content.ReadFromJsonAsync<PaginatedResponse<VisitDto>>();
     }
 }
 
@@ -38,7 +40,9 @@ public class DoctorApiClient : IDoctorApiClient
         var url = $"/doctors?size=1000";
         if (!string.IsNullOrEmpty(specialization)) url += $"&specialization={specialization}";
 
-        return await _httpClient.GetFromJsonAsync<PaginatedResponse<DoctorDto>>(url);
+        var response = await _httpClient.GetAsync(url);
+        if (!response.IsSuccessStatusCode) return new PaginatedResponse<DoctorDto> { Content = new List<DoctorDto>() };
+        return await response.Content.ReadFromJsonAsync<PaginatedResponse<DoctorDto>>();
     }
 }
 
@@ -54,6 +58,8 @@ public class PatientApiClient : IPatientApiClient
     public async Task<PaginatedResponse<PatientDto>?> GetPatientsAsync()
     {
         var url = $"/patients?size=10000";
-        return await _httpClient.GetFromJsonAsync<PaginatedResponse<PatientDto>>(url);
+        var response = await _httpClient.GetAsync(url);
+        if (!response.IsSuccessStatusCode) return new PaginatedResponse<PatientDto> { Content = new List<PatientDto>() };
+        return await response.Content.ReadFromJsonAsync<PaginatedResponse<PatientDto>>();
     }
 }
