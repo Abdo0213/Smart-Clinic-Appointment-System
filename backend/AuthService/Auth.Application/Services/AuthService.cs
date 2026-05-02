@@ -11,6 +11,8 @@ namespace Auth.Application.Services
 {
     public class AuthService : IAuthService
     {
+        private const string PatientRole = "Patient";
+
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IConfiguration _configuration;
         private readonly RoleManager<IdentityRole> _roleManager;
@@ -27,15 +29,24 @@ namespace Auth.Application.Services
 
         public async Task<IdentityResult> RegisterAsync(RegisterDto model)
         {
+            if (!await _roleManager.RoleExistsAsync(PatientRole))
+            {
+                return IdentityResult.Failed(new IdentityError
+                {
+                    Description = $"Role '{PatientRole}' is not configured."
+                });
+            }
+
             var user = new IdentityUser { UserName = model.Email, Email = model.Email };
             var result = await _userManager.CreateAsync(user, model.Password);
 
             if (result.Succeeded)
             {
-                if (!await _roleManager.RoleExistsAsync("User"))
-                    await _roleManager.CreateAsync(new IdentityRole("User"));
-
-                await _userManager.AddToRoleAsync(user, "User");
+                var roleResult = await _userManager.AddToRoleAsync(user, PatientRole);
+                if (!roleResult.Succeeded)
+                {
+                    return roleResult;
+                }
             }
 
             return result;
