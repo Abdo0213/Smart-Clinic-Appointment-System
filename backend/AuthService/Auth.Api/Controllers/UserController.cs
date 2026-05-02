@@ -1,53 +1,63 @@
-using Microsoft.AspNetCore.Identity;
+using Auth.Application.DTOs.Users;
+using Auth.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Auth.Api.Controllers;
 
 [ApiController]
 [Route("api/users")]
+[Authorize(Roles = "Admin")]  // Only admins can manage users
 public class UserController : ControllerBase
 {
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly IUserService _userService;
 
-    public UserController(UserManager<IdentityUser> userManager)
+    public UserController(IUserService userService)
     {
-        _userManager = userManager;
+        _userService = userService;
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetUsers()
+    public async Task<ActionResult<IReadOnlyList<UserDto>>> GetUsers()
     {
-        var users = await _userManager.Users.Select(u => new { u.Id, u.Email, u.UserName }).ToListAsync();
+        var users = await _userService.GetUsersAsync();
         return Ok(users);
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetUser(string id)
+    public async Task<ActionResult<UserDto>> GetUser(string id)
     {
-        var user = await _userManager.FindByIdAsync(id);
-        if (user == null) return NotFound();
+        var user = await _userService.GetUserAsync(id);
+        if (user == null)
+            return NotFound();
 
-        return Ok(new { user.Id, user.Email, user.UserName });
+        return Ok(user);
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<UserDto>> CreateUser([FromBody] CreateUserDto model)
+    {
+        var (user, errors) = await _userService.CreateUserAsync(model);
+        if (user == null)
+            return BadRequest(errors);
+
+        return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUserDto model)
+    public async Task<ActionResult<UserDto>> UpdateUser(string id, [FromBody] UpdateUserDto model)
     {
-        var user = await _userManager.FindByIdAsync(id);
-        if (user == null) return NotFound();
+        var (user, errors) = await _userService.UpdateUserAsync(id, model);
+        if (user == null)
+            return errors.Any() ? BadRequest(errors) : NotFound();
 
-        user.Email = model.Email ?? user.Email;
-        user.UserName = model.Email ?? user.UserName;
-
-        var result = await _userManager.UpdateAsync(user);
-        if (result.Succeeded) return Ok(new { user.Id, user.Email, user.UserName });
-
-        return BadRequest(result.Errors);
+        return Ok(user);
     }
-}
 
-public class UpdateUserDto
-{
-    public string? Email { get; set; }
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteUser(string id)
+    {
+        var success = await _userService.DeleteUserAsync(id);
+        return success ? NoContent() : NotFound();
+    }
 }
