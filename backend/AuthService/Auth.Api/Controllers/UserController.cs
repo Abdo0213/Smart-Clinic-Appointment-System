@@ -2,6 +2,7 @@ using Auth.Application.DTOs.Users;
 using Auth.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Http.Json;
 
 namespace Auth.Api.Controllers;
 
@@ -11,10 +12,14 @@ namespace Auth.Api.Controllers;
 public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IConfiguration _configuration;
 
-    public UserController(IUserService userService)
+    public UserController(IUserService userService, IHttpClientFactory httpClientFactory, IConfiguration configuration)
     {
         _userService = userService;
+        _httpClientFactory = httpClientFactory;
+        _configuration = configuration;
     }
 
     [HttpGet]
@@ -40,6 +45,36 @@ public class UserController : ControllerBase
         var (user, errors) = await _userService.CreateUserAsync(model);
         if (user == null)
             return BadRequest(errors);
+
+        if (model.Role.Equals("Doctor", StringComparison.OrdinalIgnoreCase))
+        {
+            try
+            {
+                var doctorServiceUrl = _configuration["Services:DoctorService"] ?? "http://localhost:8082";
+                var client = _httpClientFactory.CreateClient();
+                
+                var doctorData = new
+                {
+                    userId = user.Id,
+                    firstName = string.IsNullOrWhiteSpace(model.FirstName) ? "Doctor" : model.FirstName,
+                    lastName = string.IsNullOrWhiteSpace(model.LastName) ? "Unknown" : model.LastName,
+                    specialization = string.IsNullOrWhiteSpace(model.Specialization) ? "General Practice" : model.Specialization,
+                    bio = "Newly created doctor profile",
+                    phone = "Unknown"
+                };
+
+                var response = await client.PostAsJsonAsync($"{doctorServiceUrl}/doctors", doctorData);
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"Failed to create doctor record: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception when calling Doctor Service: {ex.Message}");
+            }
+        }
 
         return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
     }

@@ -54,6 +54,16 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                         }
                     }
 
+                    // Inject X-User-Id to the downstream services
+                    String userId = jwtUtil.getUserId(authHeader);
+                    if (userId != null) {
+                        exchange = exchange.mutate()
+                                .request(exchange.getRequest().mutate()
+                                        .header("X-User-Id", userId)
+                                        .build())
+                                .build();
+                    }
+
                 } catch (Exception e) {
                     throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized access to application");
                 }

@@ -51,6 +51,7 @@ spring:
           predicates:
             - Path=/api/patients/**
           filters:
+            - RewritePath=/api/(?<segment>.*), /$\{segment}
             - name: AuthenticationFilter
               args:
                 roles: Admin, Doctor, Receptionist, Patient
@@ -60,6 +61,7 @@ spring:
           predicates:
             - Path=/api/doctors/**
           filters:
+            - RewritePath=/api/(?<segment>.*), /$\{segment}
             - name: AuthenticationFilter
               args:
                 roles: Admin, Doctor, Receptionist
@@ -69,6 +71,7 @@ spring:
           predicates:
             - Path=/api/appointments/**
           filters:
+            - RewritePath=/api/(?<segment>.*), /$\{segment}
             - name: AuthenticationFilter
               args:
                 roles: Admin, Doctor, Receptionist, Patient
@@ -78,6 +81,7 @@ spring:
           predicates:
             - Path=/api/visits/**
           filters:
+            - RewritePath=/api/(?<segment>.*), /$\{segment}
             - name: AuthenticationFilter
               args:
                 roles: Admin, Doctor
@@ -87,6 +91,7 @@ spring:
           predicates:
             - Path=/api/billing/**
           filters:
+            - RewritePath=/api/(?<segment>.*), /$\{segment}
             - name: AuthenticationFilter
               args:
                 roles: Admin, Receptionist

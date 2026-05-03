@@ -109,6 +109,7 @@ namespace Auth.Api
 
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddHttpClient();
 
             var app = builder.Build();
 

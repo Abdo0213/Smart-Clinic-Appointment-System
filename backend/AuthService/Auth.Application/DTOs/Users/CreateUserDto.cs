@@ -15,5 +15,11 @@ namespace Auth.Application.DTOs.Users
         [Required]
         [RegularExpression("(?i)^(Doctor|Receptionist)$", ErrorMessage = "Role must be Doctor or Receptionist.")]
         public string Role { get; set; } = null!;
+
+        public string? FirstName { get; set; }
+        
+        public string? LastName { get; set; }
+        
+        public string? Specialization { get; set; }
     }
 }

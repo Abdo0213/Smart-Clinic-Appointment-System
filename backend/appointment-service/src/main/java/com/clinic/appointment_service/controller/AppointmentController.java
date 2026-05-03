@@ -23,11 +23,11 @@ public class AppointmentController {
     private final AppointmentService appointmentService;
 
     @PostMapping
-    public ResponseEntity<AppointmentResponseDTO> bookAppointment(@Valid @RequestBody AppointmentRequestDTO request) {
-        // Mocking bookedBy from a header or similar for now until Security is fully
-        // setup
-        // In a real app, this would come from the JWT token
-        UUID bookedBy = UUID.randomUUID();
+    public ResponseEntity<AppointmentResponseDTO> bookAppointment(
+            @RequestHeader(value = "X-User-Id", required = false) String userId,
+            @Valid @RequestBody AppointmentRequestDTO request) {
+        
+        UUID bookedBy = (userId != null && !userId.isEmpty()) ? UUID.fromString(userId) : UUID.randomUUID();
         return new ResponseEntity<>(appointmentService.bookAppointment(request, bookedBy), HttpStatus.CREATED);
     }
 
@@ -60,10 +60,11 @@ public class AppointmentController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<AppointmentResponseDTO> cancelAppointment(
+            @RequestHeader(value = "X-User-Id", required = false) String userId,
             @PathVariable UUID id,
             @Valid @RequestBody CancellationRequestDTO cancellationRequest) {
-        // Mocking values for now
-        UUID cancelledBy = UUID.randomUUID();
+        
+        UUID cancelledBy = (userId != null && !userId.isEmpty()) ? UUID.fromString(userId) : UUID.randomUUID();
         String role = "PATIENT"; // or RECEPTIONIST
         return ResponseEntity.ok(appointmentService.cancelAppointment(id, cancellationRequest, cancelledBy, role));
     }

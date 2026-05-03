@@ -16,7 +16,12 @@ public class PatientController {
     private final PatientService service;
 
     @PostMapping
-    public PatientResponse create(@RequestBody PatientRequest req){
+    public PatientResponse create(
+            @RequestHeader(value = "X-User-Id", required = false) String userId,
+            @RequestBody PatientRequest req) {
+        if (userId != null && !userId.isEmpty()) {
+            req.setUserId(UUID.fromString(userId));
+        }
         return service.create(req);
     }
 

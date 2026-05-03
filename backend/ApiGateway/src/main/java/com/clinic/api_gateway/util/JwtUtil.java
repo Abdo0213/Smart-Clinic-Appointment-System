@@ -61,4 +61,21 @@ public class JwtUtil {
         }
         return List.of();
     }
+
+    public String getUserId(String token) {
+        Claims claims = getAllClaimsFromToken(token);
+        // Usually .NET identity user id is "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+        // or "nameid" or "sub" or "userId"
+        Object userIdObj = claims.get("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
+        if (userIdObj == null) {
+            userIdObj = claims.get("nameid");
+        }
+        if (userIdObj == null) {
+            userIdObj = claims.get("sub");
+        }
+        if (userIdObj == null) {
+            userIdObj = claims.get("userId");
+        }
+        return userIdObj != null ? userIdObj.toString() : null;
+    }
 }

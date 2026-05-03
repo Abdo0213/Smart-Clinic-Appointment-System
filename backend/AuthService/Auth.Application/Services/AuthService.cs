@@ -1,4 +1,4 @@
-﻿using Auth.Application.DTOs.Auth;
+using Auth.Application.DTOs.Auth;
 using Auth.Application.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -27,14 +27,14 @@ namespace Auth.Application.Services
             _configuration = configuration;
         }
 
-        public async Task<IdentityResult> RegisterAsync(RegisterDto model)
+        public async Task<(IdentityResult Result, string? UserId)> RegisterAsync(RegisterDto model)
         {
             if (!await _roleManager.RoleExistsAsync(PatientRole))
             {
-                return IdentityResult.Failed(new IdentityError
+                return (IdentityResult.Failed(new IdentityError
                 {
                     Description = $"Role '{PatientRole}' is not configured."
-                });
+                }), null);
             }
 
             var user = new IdentityUser { UserName = model.Email, Email = model.Email };
@@ -45,11 +45,12 @@ namespace Auth.Application.Services
                 var roleResult = await _userManager.AddToRoleAsync(user, PatientRole);
                 if (!roleResult.Succeeded)
                 {
-                    return roleResult;
+                    return (roleResult, null);
                 }
+                return (result, user.Id);
             }
 
-            return result;
+            return (result, null);
         }
 
         public async Task<(string? Token, string? Error)> LoginAsync(LoginDto model)

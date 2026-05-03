@@ -1,8 +1,8 @@
 {
 	"info": {
 		"_postman_id": "766579ab-a3cf-42bb-9ba6-f441ffb15eb1",
-		"name": "Smart Clinic API Gateway Tests",
-		"description": "Collection to test the API Gateway routing, authentication, and role-based authorization exceptions.",
+		"name": "Smart Clinic API Gateway Endpoints",
+		"description": "Comprehensive collection testing the API Gateway routing, authentication, and role-based authorization for Smart Clinic.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -24,22 +24,14 @@
 							"raw": "{\n    \"email\": \"admin@clinic.com\",\n    \"password\": \"Admin123!\"\n}"
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/auth/login",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login"]
 						}
 					}
 				},
 				{
-					"name": "Register (Auth Service)",
+					"name": "Register Patient (Auth Service)",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -50,19 +42,228 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"firstName\": \"Test\",\n    \"lastName\": \"User\",\n    \"email\": \"test@clinic.com\",\n    \"password\": \"Password123!\",\n    \"role\": \"Patient\"\n}"
+							"raw": "{\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"email\": \"patient1@clinic.com\",\n    \"password\": \"Password123!\"\n}"
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/auth/register",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"auth",
-								"register"
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "register"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Admin Capabilities",
+			"item": [
+				{
+					"name": "Create User With Any Role (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{"key": "token", "value": "{{admin_token}}", "type": "string"}]
+						},
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"Gregory\",\n    \"lastName\": \"House\",\n    \"specialization\": \"Diagnostic Medicine\",\n    \"email\": \"doctor123@clinic.com\",\n    \"password\": \"Password123!\",\n    \"role\": \"Doctor\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users"]
+						}
+					}
+				},
+				{
+					"name": "Get All Users (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{"key": "token", "value": "{{admin_token}}", "type": "string"}]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/users",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users"]
+						}
+					}
+				},
+				{
+					"name": "Create Doctor Profile (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{"key": "token", "value": "{{admin_token}}", "type": "string"}]
+						},
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userId\": \"<REPLACE_WITH_NEW_USER_ID>\",\n    \"firstName\": \"Gregory\",\n    \"lastName\": \"House\",\n    \"specialization\": \"Diagnostic Medicine\",\n    \"bio\": \"Brilliant but unconventional\",\n    \"phone\": \"555-0100\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/doctors",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "doctors"]
+						}
+					}
+				},
+				{
+					"name": "Get All Doctors (Admin/Public)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{"key": "token", "value": "{{admin_token}}", "type": "string"}]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/doctors",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "doctors"]
+						}
+					}
+				},
+				{
+					"name": "Get All Patients (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{"key": "token", "value": "{{admin_token}}", "type": "string"}]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/patients",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "patients"]
+						}
+					}
+				},
+				{
+					"name": "Get All Appointments (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{"key": "token", "value": "{{admin_token}}", "type": "string"}]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/appointments",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "appointments"]
+						}
+					}
+				},
+				{
+					"name": "Get All Invoices (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{"key": "token", "value": "{{admin_token}}", "type": "string"}]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/billing/invoices",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "billing", "invoices"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Doctor Capabilities",
+			"item": [
+				{
+					"name": "Get Doctor Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{"key": "token", "value": "{{doctor_token}}", "type": "string"}]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/doctors/<REPLACE_WITH_DOCTOR_ID>",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "doctors", "<REPLACE_WITH_DOCTOR_ID>"]
+						}
+					}
+				},
+				{
+					"name": "Add Doctor Schedule",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{"key": "token", "value": "{{doctor_token}}", "type": "string"}]
+						},
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"date\": \"2026-04-27\",\n    \"startTime\": \"09:00:00\",\n    \"endTime\": \"17:00:00\",\n    \"slotDuration\": 30,\n    \"price\": 100.0,\n    \"breaks\": [\n        {\n            \"breakStart\": \"12:00:00\",\n            \"breakEnd\": \"13:00:00\"\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/doctors/<REPLACE_WITH_DOCTOR_ID>/schedules",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "doctors", "<REPLACE_WITH_DOCTOR_ID>", "schedules"]
+						}
+					}
+				},
+				{
+					"name": "Get Doctor Schedules",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{"key": "token", "value": "{{doctor_token}}", "type": "string"}]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/doctors/<REPLACE_WITH_DOCTOR_ID>/schedules",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "doctors", "<REPLACE_WITH_DOCTOR_ID>", "schedules"]
+						}
+					}
+				},
+				{
+					"name": "Get Doctor Available Slots",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{"key": "token", "value": "{{doctor_token}}", "type": "string"}]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/doctors/<REPLACE_WITH_DOCTOR_ID>/slots?date=2026-04-20",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "doctors", "<REPLACE_WITH_DOCTOR_ID>", "slots"],
+							"query": [
+								{
+									"key": "date",
+									"value": "2026-04-20"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Doctor's Appointments",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{"key": "token", "value": "{{doctor_token}}", "type": "string"}]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/appointments?doctorId=<REPLACE_WITH_DOCTOR_ID>",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "appointments"],
+							"query": [
+								{
+									"key": "doctorId",
+									"value": "<REPLACE_WITH_DOCTOR_ID>"
+								}
 							]
 						}
 					}
@@ -70,299 +271,263 @@
 			]
 		},
 		{
-			"name": "2. Gateway Exceptions (Auth Failures)",
+			"name": "4. Patient Capabilities",
 			"item": [
 				{
-					"name": "Missing Token (Expected 401)",
+					"name": "Create Patient Profile (Explicit)",
 					"request": {
-						"method": "GET",
-						"header": [],
+						"auth": {
+							"type": "bearer",
+							"bearer": [{"key": "token", "value": "{{patient_token}}", "type": "string"}]
+						},
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"dateOfBirth\": \"1990-05-15\",\n    \"gender\": \"MALE\",\n    \"phone\": \"+20 100 123 4567\",\n    \"address\": \"12 Nile St, Cairo\",\n    \"bloodType\": \"O+\",\n    \"knownAllergies\": \"Penicillin\",\n    \"emergencyContact\": \"Jane Doe\",\n    \"emergencyPhone\": \"+20 100 987 6543\",\n    \"insuranceProvider\": \"AllianzEgypt\",\n    \"insuranceNumber\": \"AE-2024-9876\"\n}"
+						},
 						"url": {
-							"raw": "http://localhost:8080/api/patients/all",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"patients",
-								"all"
+							"raw": "{{baseUrl}}/api/patients",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "patients"]
+						}
+					}
+				},
+				{
+					"name": "Get Patient Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{"key": "token", "value": "{{patient_token}}", "type": "string"}]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/patients/<REPLACE_WITH_PATIENT_ID>",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "patients", "<REPLACE_WITH_PATIENT_ID>"]
+						}
+					}
+				},
+				{
+					"name": "Book Appointment",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{"key": "token", "value": "{{patient_token}}", "type": "string"}]
+						},
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"patientId\": \"<REPLACE_WITH_PATIENT_ID>\",\n    \"doctorId\": \"<REPLACE_WITH_DOCTOR_ID>\",\n    \"slotDate\": \"2026-04-20\",\n    \"slotStart\": \"10:00:00\",\n    \"slotEnd\": \"10:30:00\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/appointments",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "appointments"]
+						}
+					}
+				},
+				{
+					"name": "Get Patient's Appointments",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{"key": "token", "value": "{{patient_token}}", "type": "string"}]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/appointments?patientId=<REPLACE_WITH_PATIENT_ID>",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "appointments"],
+							"query": [
+								{
+									"key": "patientId",
+									"value": "<REPLACE_WITH_PATIENT_ID>"
+								}
 							]
 						}
 					}
 				},
 				{
-					"name": "Invalid/Fake Token (Expected 401)",
+					"name": "Cancel Appointment",
 					"request": {
 						"auth": {
 							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.FakeTokenPayloadHere.InvalidSignature",
-									"type": "string"
-								}
-							]
+							"bearer": [{"key": "token", "value": "{{patient_token}}", "type": "string"}]
 						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/doctors/all",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"doctors",
-								"all"
-							]
-						}
-					}
-				},
-				{
-					"name": "Insufficient Role/Patient accessing Admin (Expected 403)",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{patient_token}}",
-									"type": "string"
-								}
-							]
+						"method": "DELETE",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"reason\": \"Patient requested cancellation\"\n}"
 						},
-						"method": "GET",
-						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/api/admin/dashboard",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"admin",
-								"dashboard"
-							]
+							"raw": "{{baseUrl}}/api/appointments/<REPLACE_WITH_APPOINTMENT_ID>",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "appointments", "<REPLACE_WITH_APPOINTMENT_ID>"]
 						}
 					}
 				}
 			]
 		},
 		{
-			"name": "3. Valid Routed Requests (Success Cases)",
+			"name": "5. Visit Capabilities",
 			"item": [
 				{
-					"name": "Admin Service (Requires Admin Role)",
+					"name": "Create Visit (Doctor)",
 					"request": {
 						"auth": {
 							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{admin_token}}",
-									"type": "string"
-								}
-							]
+							"bearer": [{"key": "token", "value": "{{doctor_token}}", "type": "string"}]
+						},
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"appointmentId\": \"<REPLACE_WITH_APPOINTMENT_ID>\",\n  \"chiefComplaint\": \"Chest pain, shortness of breath\",\n  \"examinationFindings\": \"BP 140/90, HR 88 bpm, clear lungs\",\n  \"assessment\": \"Hypertension stage 2\",\n  \"plan\": \"Lifestyle modification + Amlodipine 5mg daily\",\n  \"icd10Codes\": \"I10\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/visits",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "visits"]
+						}
+					}
+				},
+				{
+					"name": "Get Visit By ID (Doctor/Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{"key": "token", "value": "{{doctor_token}}", "type": "string"}]
 						},
 						"method": "GET",
-						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/api/admin/users",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"admin",
-								"users"
+							"raw": "{{baseUrl}}/api/visits/<REPLACE_WITH_VISIT_ID>",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "visits", "<REPLACE_WITH_VISIT_ID>"]
+						}
+					}
+				},
+				{
+					"name": "Get Doctor's Visits",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{"key": "token", "value": "{{doctor_token}}", "type": "string"}]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/visits?doctorId=<REPLACE_WITH_DOCTOR_ID>",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "visits"],
+							"query": [
+								{
+									"key": "doctorId",
+									"value": "<REPLACE_WITH_DOCTOR_ID>"
+								}
 							]
 						}
 					}
 				},
 				{
-					"name": "User Service (Requires Admin Role)",
+					"name": "Sign Visit (Doctor)",
 					"request": {
 						"auth": {
 							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{admin_token}}",
-									"type": "string"
-								}
-							]
+							"bearer": [{"key": "token", "value": "{{doctor_token}}", "type": "string"}]
+						},
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"additionalItems\": [\n    {\n      \"description\": \"X-Ray - Chest\",\n      \"quantity\": 1,\n      \"unitPrice\": 50.0\n    },\n    {\n      \"description\": \"Wound Dressing\",\n      \"quantity\": 1,\n      \"unitPrice\": 20.0\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/visits/<REPLACE_WITH_VISIT_ID>/sign",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "visits", "<REPLACE_WITH_VISIT_ID>", "sign"]
+						}
+					}
+				},
+				{
+					"name": "Issue Prescription (Doctor)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{"key": "token", "value": "{{doctor_token}}", "type": "string"}]
+						},
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"medicationName\": \"Amlodipine\",\n  \"dosage\": \"5mg\",\n  \"frequency\": \"Once daily\",\n  \"durationDays\": 30,\n  \"notes\": \"Take in the morning with food\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/visits/<REPLACE_WITH_VISIT_ID>/prescriptions",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "visits", "<REPLACE_WITH_VISIT_ID>", "prescriptions"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "6. Billing Capabilities",
+			"item": [
+				{
+					"name": "Create Invoice (Admin/Receptionist)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{"key": "token", "value": "{{admin_token}}", "type": "string"}]
+						},
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"visitId\": \"<REPLACE_WITH_VISIT_ID>\",\n    \"patientId\": \"<REPLACE_WITH_PATIENT_ID>\",\n    \"appointmentId\": \"<REPLACE_WITH_APPOINTMENT_ID>\",\n    \"lineItems\": [\n        {\n            \"description\": \"Consultation Fee\",\n            \"quantity\": 1,\n            \"unitPrice\": 500.00\n        },\n        {\n            \"description\": \"ECG\",\n            \"quantity\": 1,\n            \"unitPrice\": 150.00\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/billing/invoices",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "billing", "invoices"]
+						}
+					}
+				},
+				{
+					"name": "Get Patient Invoices (Receptionist/Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{"key": "token", "value": "{{admin_token}}", "type": "string"}]
 						},
 						"method": "GET",
-						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/api/users",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"users"
+							"raw": "{{baseUrl}}/api/billing/invoices?patientId=<REPLACE_WITH_PATIENT_ID>",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "billing", "invoices"],
+							"query": [
+								{
+									"key": "patientId",
+									"value": "<REPLACE_WITH_PATIENT_ID>"
+								}
 							]
 						}
 					}
 				},
 				{
-					"name": "Patient Service (Requires Any Role)",
+					"name": "Mark Invoice as Paid (Receptionist/Admin)",
 					"request": {
 						"auth": {
 							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{patient_token}}",
-									"type": "string"
-								}
-							]
+							"bearer": [{"key": "token", "value": "{{admin_token}}", "type": "string"}]
 						},
-						"method": "GET",
-						"header": [],
+						"method": "PATCH",
 						"url": {
-							"raw": "http://localhost:8080/api/patients/profile",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"patients",
-								"profile"
-							]
-						}
-					}
-				},
-				{
-					"name": "Appointment Service (Requires Any Role)",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{patient_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/appointments/list",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"appointments",
-								"list"
-							]
-						}
-					}
-				},
-				{
-					"name": "Doctor Service (Requires Admin/Doctor/Receptionist)",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{doctor_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/doctors/list",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"doctors",
-								"list"
-							]
-						}
-					}
-				},
-				{
-					"name": "Billing Service (Requires Admin/Receptionist)",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{admin_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/billing/invoices",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"billing",
-								"invoices"
-							]
-						}
-					}
-				},
-				{
-					"name": "Visit Service (Requires Admin/Doctor)",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{doctor_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/visits/history",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"visits",
-								"history"
-							]
+							"raw": "{{baseUrl}}/api/billing/invoices/<REPLACE_WITH_INVOICE_ID>/pay",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "billing", "invoices", "<REPLACE_WITH_INVOICE_ID>", "pay"]
 						}
 					}
 				}
@@ -371,16 +536,20 @@
 	],
 	"variable": [
 		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080"
+		},
+		{
 			"key": "admin_token",
 			"value": "Put_Your_Admin_JWT_Here"
 		},
 		{
-			"key": "patient_token",
-			"value": "Put_Your_Patient_JWT_Here"
-		},
-		{
 			"key": "doctor_token",
 			"value": "Put_Your_Doctor_JWT_Here"
+		},
+		{
+			"key": "patient_token",
+			"value": "Put_Your_Patient_JWT_Here"
 		}
 	]
 }
