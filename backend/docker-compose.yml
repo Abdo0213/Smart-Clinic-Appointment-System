@@ -12,26 +12,30 @@ services:
     environment:
       - DB_HOST=auth-db
       - DB_PORT=5432
-      - DB_NAME=dms_customer
+      - DB_NAME=Clinic_AuthDb
       - DB_USER=postgres
       - DB_PASSWORD=password@12345#
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080;http://+:8081  # Ensures app listens on these ports inside container
     ports:
-      - "5005:8080"
+      - "5005:8080"  # Host 5005 -> Container 8080
+      - "5006:8081"  # Host 5006 -> Container 8081 (if needed)
 
   auth-db:
     container_name: auth-db
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: dms_customer
+      POSTGRES_DB: Clinic_AuthDb
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password@12345#
     networks:
       - backend
     ports:
       - "18001:5432"
+    volumes:
+      - auth-db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d dms_customer"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d Clinic_AuthDb"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -39,3 +43,6 @@ services:
 networks:
   backend:
     driver: bridge
+
+volumes:
+  auth-db-data:
