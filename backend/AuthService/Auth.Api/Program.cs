@@ -55,18 +55,26 @@ namespace Auth.Api
                 });
             });
 
-            //var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
-            //var dbPort = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";
-            //var dbName = Environment.GetEnvironmentVariable("DB_NAME");
-            //var dbUser = Environment.GetEnvironmentVariable("DB_USER");
-            //var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
+            // Determine if running in Docker by checking for DB_HOST
+            string connectionString;
+            var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
 
-            //var connectionString =
-            //    $"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPassword}";
+            if (!string.IsNullOrWhiteSpace(dbHost))
+            {
+                // Running in Docker -> Construct connection string from env variables
+                var dbPort = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";
+                var dbName = Environment.GetEnvironmentVariable("DB_NAME");
+                var dbUser = Environment.GetEnvironmentVariable("DB_USER");
+                var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
 
-            var connectionString =
-                builder.Configuration.GetConnectionString("DefaultConnection")
-                ?? throw new InvalidOperationException("Connection string 'DefaultConnection' was not found.");
+                connectionString = $"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPassword}";
+            }
+            else
+            {
+                // Running locally without Docker -> Fallback to appsettings
+                connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+                    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' was not found.");
+            }
 
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseNpgsql(connectionString));
@@ -109,7 +117,6 @@ namespace Auth.Api
 
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IUserService, UserService>();
-            builder.Services.AddHttpClient();
 
             var app = builder.Build();
 
