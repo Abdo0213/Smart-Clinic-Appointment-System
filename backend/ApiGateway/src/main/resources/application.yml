@@ -42,6 +42,7 @@ spring:
           predicates:
             - Path=/api/admin/**
           filters:
+            - RewritePath=/api/(?<segment>.*), /$\{segment}
             - name: AuthenticationFilter
               args:
                 roles: Admin
