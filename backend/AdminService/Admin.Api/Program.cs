@@ -47,23 +47,32 @@ builder.Services.AddHttpClient<IAuthApiClient, AuthApiClient>(client =>
     client.BaseAddress = new Uri("http://localhost:5005");
 });
 
-// Configure AWS S3
-var awsOptions = builder.Configuration.GetSection("AWS");
-var accessKey = awsOptions["AccessKey"];
-var secretKey = awsOptions["SecretKey"];
+// Configure Storage Service
+var storageType = builder.Configuration["Storage:Type"] ?? "S3";
 
-if (!string.IsNullOrEmpty(accessKey) && accessKey != "YOUR_ACCESS_KEY" && 
-    !string.IsNullOrEmpty(secretKey) && secretKey != "YOUR_SECRET_KEY")
+if (storageType.Equals("S3", StringComparison.OrdinalIgnoreCase))
 {
-    builder.Services.AddAWSService<IAmazonS3>();
+    var awsOptions = builder.Configuration.GetSection("AWS");
+    var accessKey = awsOptions["AccessKey"];
+    var secretKey = awsOptions["SecretKey"];
+
+    if (!string.IsNullOrEmpty(accessKey) && accessKey != "YOUR_ACCESS_KEY" && 
+        !string.IsNullOrEmpty(secretKey) && secretKey != "YOUR_SECRET_KEY")
+    {
+        builder.Services.AddAWSService<IAmazonS3>();
+    }
+    else
+    {
+        builder.Services.AddSingleton<IAmazonS3>(sp => null!); 
+    }
+    builder.Services.AddScoped<IReportStorageService, S3ReportStorageService>();
 }
 else
 {
-    // Register a null implementation or handle it in the service
-    builder.Services.AddSingleton<IAmazonS3>(sp => null!); 
+    builder.Services.AddScoped<IReportStorageService, LocalReportStorageService>();
 }
 
-builder.Services.AddScoped<IReportStorageService, S3ReportStorageService>();
+builder.Services.AddScoped<IPdfService, PdfService>();
 
 var app = builder.Build();
 
@@ -74,6 +83,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseStaticFiles(); // Required to serve reports from wwwroot
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
