@@ -20,6 +20,7 @@ public class AdminController : ControllerBase
     private readonly IAuthApiClient _authApiClient;
     private readonly AdminDbContext _dbContext;
     private readonly IReportStorageService _reportStorage;
+    private readonly IPdfService _pdfService;
 
     public AdminController(
         IAppointmentApiClient appointmentApiClient, 
@@ -29,7 +30,8 @@ public class AdminController : ControllerBase
         IPatientApiClient patientApiClient,
         IAuthApiClient authApiClient,
         AdminDbContext dbContext,
-        IReportStorageService reportStorage)
+        IReportStorageService reportStorage,
+        IPdfService pdfService)
     {
         _appointmentApiClient = appointmentApiClient;
         _billingApiClient = billingApiClient;
@@ -39,6 +41,7 @@ public class AdminController : ControllerBase
         _authApiClient = authApiClient;
         _dbContext = dbContext;
         _reportStorage = reportStorage;
+        _pdfService = pdfService;
     }
     
     // GET /admin/dashboard
@@ -378,72 +381,146 @@ public class AdminController : ControllerBase
     [HttpGet("reports/export")]
     public async Task<IActionResult> ExportReport([FromQuery] string reportType, [FromQuery] string? dateFrom, [FromQuery] string? dateTo)
     {
-        var csv = new System.Text.StringBuilder();
-        var fileName = $"{reportType}_{DateTime.UtcNow:yyyyMMdd_HHmmss}.csv";
+        byte[] pdfContent;
+        string fileName = $"{reportType}_{DateTime.UtcNow:yyyyMMdd_HHmmss}.pdf";
 
         if (reportType == "appointments")
         {
-            var response = await _appointmentApiClient.GetAppointmentsAsync(dateFrom, dateTo, null);
-            var appointments = response?.Content ?? new List<AppointmentDto>();
-
-            csv.AppendLine("Id,DoctorId,Status,CreatedAt");
-            foreach (var a in appointments)
-                csv.AppendLine($"{a.Id},{a.DoctorId},{a.Status},{a.CreatedAt:yyyy-MM-dd HH:mm:ss}");
+            var reportData = await GetAppointmentsReportData(dateFrom, dateTo, null);
+            pdfContent = _pdfService.GenerateAppointmentsReport(reportData);
         }
         else if (reportType == "revenue")
         {
-            var response = await _billingApiClient.GetInvoicesAsync(dateFrom, dateTo);
-            var invoices = response?.Content ?? new List<InvoiceDto>();
-
-            csv.AppendLine("Id,Status,TotalAmount,CreatedAt");
-            foreach (var i in invoices)
-                csv.AppendLine($"{i.Id},{i.Status},{i.TotalAmount},{i.CreatedAt:yyyy-MM-dd HH:mm:ss}");
+            var reportData = await GetRevenueReportData(dateFrom, dateTo);
+            pdfContent = _pdfService.GenerateRevenueReport(reportData);
         }
         else if (reportType == "visits")
         {
-            var response = await _visitApiClient.GetVisitsAsync(dateFrom, dateTo, null);
-            var visits = response?.Content ?? new List<VisitDto>();
-
-            csv.AppendLine("Id,DoctorId,PatientId,IsSigned,CreatedAt");
-            foreach (var v in visits)
-                csv.AppendLine($"{v.Id},{v.DoctorId},{v.PatientId},{v.IsSigned},{v.CreatedAt:yyyy-MM-dd HH:mm:ss}");
+            var reportData = await GetVisitsReportData(dateFrom, dateTo, null);
+            pdfContent = _pdfService.GenerateVisitsReport(reportData);
         }
         else if (reportType == "doctors")
         {
-            var response = await _doctorApiClient.GetDoctorsAsync(null);
-            var doctors = response?.Content ?? new List<DoctorDto>();
-
-            csv.AppendLine("Id,Specialization,IsActive,CreatedAt");
-            foreach (var d in doctors)
-                csv.AppendLine($"{d.Id},{d.Specialization},{d.IsActive},{d.CreatedAt:yyyy-MM-dd HH:mm:ss}");
+            var reportData = await GetDoctorsReportData(null);
+            pdfContent = _pdfService.GenerateDoctorsReport(reportData);
         }
         else if (reportType == "patients")
         {
-            var response = await _patientApiClient.GetPatientsAsync();
-            var patients = response?.Content ?? new List<PatientDto>();
-
-            csv.AppendLine("Id,Gender,CreatedAt");
-            foreach (var p in patients)
-                csv.AppendLine($"{p.Id},{p.Gender},{p.CreatedAt:yyyy-MM-dd HH:mm:ss}");
+            var reportData = await GetPatientsReportData();
+            pdfContent = _pdfService.GeneratePatientsReport(reportData);
         }
         else if (reportType == "audit-log")
         {
-            var query = _dbContext.AuditLogs.AsQueryable();
-            // Basic date filtering for local logs if needed
-            var logs = await query.OrderByDescending(a => a.OccurredAt).ToListAsync();
-
-            csv.AppendLine("Id,ActorId,Service,Action,EntityType,EntityId,OccurredAt");
-            foreach (var l in logs)
-                csv.AppendLine($"{l.Id},{l.ActorId},{l.Service},{l.Action},{l.EntityType},{l.EntityId},{l.OccurredAt:yyyy-MM-dd HH:mm:ss}");
+            var logs = await _dbContext.AuditLogs.OrderByDescending(a => a.OccurredAt).ToListAsync();
+            pdfContent = _pdfService.GenerateAuditLogReport(logs);
         }
         else
         {
-            return BadRequest(new { message = $"Unknown reportType '{reportType}'. Valid values: appointments, revenue, visits, doctors, patients, audit-log" });
+            return BadRequest(new { message = $"PDF export for '{reportType}' is not yet implemented." });
         }
 
-        var downloadUrl = await _reportStorage.UploadReportAsync(fileName, csv.ToString());
+        var downloadUrl = await _reportStorage.UploadReportAsync(fileName, pdfContent, "application/pdf");
 
         return Ok(new { downloadUrl, expiresInSeconds = 3600 });
+    }
+
+    // Helper methods to reuse logic from GET endpoints
+    private async Task<AppointmentsReportResponse> GetAppointmentsReportData(string? dateFrom, string? dateTo, string? doctorId)
+    {
+        var response = await _appointmentApiClient.GetAppointmentsAsync(dateFrom, dateTo, doctorId);
+        var appointments = response?.Content ?? new List<AppointmentDto>();
+        var doctorNames = await GetDoctorNamesAsync();
+        var patientNames = await GetPatientNamesAsync();
+
+        foreach (var a in appointments)
+        {
+            a.DoctorName = doctorNames.GetValueOrDefault(a.DoctorId, "Unknown");
+            a.PatientName = patientNames.GetValueOrDefault(a.PatientId, "Unknown");
+        }
+
+        return new AppointmentsReportResponse
+        {
+            Period = new PeriodDto { From = dateFrom ?? "all time", To = dateTo ?? "all time" },
+            TotalAppointments = appointments.Count,
+            Completed = appointments.Count(a => a.Status == "COMPLETED"),
+            Cancelled = appointments.Count(a => a.Status == "CANCELLED"),
+            NoShow = appointments.Count(a => a.Status == "NO_SHOW"),
+            Records = appointments
+        };
+    }
+
+    private async Task<RevenueReportResponse> GetRevenueReportData(string? dateFrom, string? dateTo)
+    {
+        var response = await _billingApiClient.GetInvoicesAsync(dateFrom, dateTo);
+        var invoices = response?.Content ?? new List<InvoiceDto>();
+        var patientNames = await GetPatientNamesAsync();
+
+        foreach (var i in invoices)
+        {
+            i.PatientName = patientNames.GetValueOrDefault(i.PatientId, "Unknown");
+        }
+
+        return new RevenueReportResponse
+        {
+            Period = new PeriodDto { From = dateFrom ?? "all time", To = dateTo ?? "all time" },
+            TotalBilled = invoices.Sum(i => i.TotalAmount),
+            TotalCollected = invoices.Where(i => i.Status == "PAID").Sum(i => i.TotalAmount),
+            Records = invoices
+        };
+    }
+
+    private async Task<VisitsReportResponse> GetVisitsReportData(string? dateFrom, string? dateTo, string? doctorId)
+    {
+        var response = await _visitApiClient.GetVisitsAsync(dateFrom, dateTo, doctorId);
+        var visits = response?.Content ?? new List<VisitDto>();
+        var doctorNames = await GetDoctorNamesAsync();
+        var patientNames = await GetPatientNamesAsync();
+
+        foreach (var v in visits)
+        {
+            v.DoctorName = doctorNames.GetValueOrDefault(v.DoctorId, "Unknown");
+            v.PatientName = patientNames.GetValueOrDefault(v.PatientId, "Unknown");
+        }
+
+        return new VisitsReportResponse
+        {
+            Period = new PeriodDto { From = dateFrom ?? "all time", To = dateTo ?? "all time" },
+            TotalVisits = visits.Count,
+            SignedVisits = visits.Count(v => v.IsSigned),
+            UnsignedVisits = visits.Count(v => !v.IsSigned),
+            Records = visits
+        };
+    }
+
+    private async Task<DoctorsReportResponse> GetDoctorsReportData(string? specialization)
+    {
+        var response = await _doctorApiClient.GetDoctorsAsync(specialization);
+        var doctors = response?.Content ?? new List<DoctorDto>();
+
+        return new DoctorsReportResponse
+        {
+            TotalDoctors = doctors.Count,
+            ActiveDoctors = doctors.Count(d => d.IsActive),
+            BySpecialization = doctors.GroupBy(d => d.Specialization)
+                .Select(g => new SpecializationCount { Specialization = g.Key, Count = g.Count() })
+                .ToList(),
+            Records = doctors
+        };
+    }
+
+    private async Task<PatientsReportResponse> GetPatientsReportData()
+    {
+        var response = await _patientApiClient.GetPatientsAsync();
+        var patients = response?.Content ?? new List<PatientDto>();
+
+        return new PatientsReportResponse
+        {
+            TotalPatients = patients.Count,
+            ByGender = patients.GroupBy(p => p.Gender)
+                .Select(g => new GenderCount { Gender = g.Key, Count = g.Count() })
+                .ToList(),
+            Records = patients
+        };
     }
     private async Task<Dictionary<string, string>> GetDoctorNamesAsync()
     {

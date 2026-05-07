@@ -1,5 +1,6 @@
 using Amazon.S3;
 using Amazon.S3.Model;
+using System.IO;
 using Admin.Application.Interfaces;
 
 namespace Admin.Infrastructure.Services;
@@ -14,18 +15,17 @@ public class S3ReportStorageService : IReportStorageService
         _s3Client = s3Client;
     }
 
-    public async Task<string> UploadReportAsync(string fileName, string csvContent)
+    public async Task<string> UploadReportAsync(string fileName, byte[] content, string contentType)
     {
-        // Wrapping in try/catch to ensure the system doesn't crash if AWS credentials are not set locally yet.
-        // It will gracefully fall back to a mock URL during development.
         try 
         {
+            using var ms = new MemoryStream(content);
             var putRequest = new PutObjectRequest
             {
                 BucketName = _bucketName,
                 Key = $"exports/{fileName}",
-                ContentBody = csvContent,
-                ContentType = "text/csv"
+                InputStream = ms,
+                ContentType = contentType
             };
             
             await _s3Client.PutObjectAsync(putRequest);
