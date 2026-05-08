@@ -1,5 +1,6 @@
 using Auth.Application.Interfaces;
 using Auth.Application.Services;
+using Auth.Domain.Entities;
 using Auth.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -18,6 +19,7 @@ namespace Auth.Api
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddControllers();
+            builder.Services.AddHttpClient();
             builder.Services.AddEndpointsApiExplorer();
 
             builder.Services.AddOpenApi();
@@ -79,7 +81,7 @@ namespace Auth.Api
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseNpgsql(connectionString));
 
-            builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<AppDbContext>();
 
             var jwtKey = builder.Configuration["Jwt:Key"];
@@ -160,7 +162,7 @@ namespace Auth.Api
                 return;
             }
 
-            var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+            var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
             if (!await roleManager.RoleExistsAsync("Admin"))
@@ -171,11 +173,13 @@ namespace Auth.Api
             var adminUser = await userManager.FindByEmailAsync(email);
             if (adminUser == null)
             {
-                adminUser = new IdentityUser
+                adminUser = new ApplicationUser
                 {
                     UserName = email,
                     Email = email,
-                    EmailConfirmed = true
+                    EmailConfirmed = true,
+                    FirstName = "Admin",
+                    LastName = "User"
                 };
 
                 var createResult = await userManager.CreateAsync(adminUser, password);

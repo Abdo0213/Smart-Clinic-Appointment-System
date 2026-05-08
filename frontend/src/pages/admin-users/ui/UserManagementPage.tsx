@@ -9,7 +9,7 @@ import { toast } from 'sonner'
 import { apiClient } from '@/shared/api/client'
 import { API_ROUTES } from '@/shared/api/apiRoutes'
 import { AuthGuard } from '@/features/auth/ui/AuthGuard'
-import { createUserSchema, type CreateUserData } from '@/features/auth/model/schemas'
+import { createUserSchema, createUserBaseSchema, type CreateUserData } from '@/features/auth/model/schemas'
 import { DataTable } from '@/shared/ui/data-table/data-table'
 import { ConfirmDialog } from '@/shared/ui/confirm-dialog/confirm-dialog'
 import { SearchBar } from '@/shared/ui/search-bar/search-bar'
@@ -32,6 +32,7 @@ interface UserItem {
   lastName: string
   role: UserRole
   specialization?: string
+  isActive?: boolean
 }
 
 interface UsersResponse {
@@ -228,7 +229,7 @@ function EditUserForm({
     formState: { errors },
   } = useForm({
     resolver: zodResolver(
-      createUserSchema.omit({ password: true }).extend({
+      createUserBaseSchema.omit({ password: true }).extend({
         firstName: z.string().min(1, 'First name is required'),
         lastName: z.string().min(1, 'Last name is required'),
         email: z.string().email().min(1, 'Email is required'),
@@ -356,7 +357,7 @@ export default function UserManagementPage() {
 
   const handleToggleStatus = () => {
     if (!toggleTarget) return
-    const newStatus = !(toggleTarget as any).isActive
+    const newStatus = !toggleTarget.isActive
     toggleStatusMutation.mutate(
       { doctorId: toggleTarget.id, isActive: newStatus },
       {
@@ -387,6 +388,26 @@ export default function UserManagementPage() {
           {row.original.role}
         </Badge>
       ),
+    },
+    {
+      id: 'status',
+      header: 'Status',
+      cell: ({ row }) => {
+        if (row.original.role !== 'Doctor') return null
+        const status = row.original.isActive
+        if (status === undefined || status === null) {
+          return <Badge variant="outline">Unknown</Badge>
+        }
+        const isActive = Boolean(row.original.isActive)
+        return (
+          <Badge 
+            variant={isActive ? 'default' : 'secondary'} 
+            className={isActive ? 'bg-green-500/10 text-green-700 border-green-500/20' : ''}
+          >
+            {isActive ? 'Active' : 'Inactive'}
+          </Badge>
+        )
+      },
     },
     {
       id: 'actions',
@@ -423,7 +444,7 @@ export default function UserManagementPage() {
               }}
               title="Toggle active status"
             >
-              {(row.original as any).isActive !== false ? (
+              {Boolean(row.original.isActive) ? (
                 <ShieldOffIcon className="size-4 text-orange-500" />
               ) : (
                 <ShieldCheckIcon className="size-4 text-green-500" />
@@ -435,8 +456,8 @@ export default function UserManagementPage() {
     },
   ]
 
-  const users = data?.content ?? []
-  const totalPages = data?.totalPages ?? 0
+  const users = Array.isArray(data) ? data : data?.content ?? []
+  const totalPages = Array.isArray(data) ? 1 : data?.totalPages ?? 0
 
   return (
     <AuthGuard requiredRole="Admin">
@@ -483,9 +504,9 @@ export default function UserManagementPage() {
           open={toggleStatusOpen}
           onOpenChange={setToggleStatusOpen}
           title="Toggle Doctor Status"
-          description={`Are you sure you want to ${(toggleTarget as any)?.isActive !== false ? 'deactivate' : 'activate'} Dr. ${toggleTarget?.firstName} ${toggleTarget?.lastName}?`}
-          confirmLabel={(toggleTarget as any)?.isActive !== false ? 'Deactivate' : 'Activate'}
-          variant={(toggleTarget as any)?.isActive !== false ? 'destructive' : 'default'}
+          description={`Are you sure you want to ${Boolean(toggleTarget?.isActive) ? 'deactivate' : 'activate'} Dr. ${toggleTarget?.firstName} ${toggleTarget?.lastName}?`}
+          confirmLabel={Boolean(toggleTarget?.isActive) ? 'Deactivate' : 'Activate'}
+          variant={Boolean(toggleTarget?.isActive) ? 'destructive' : 'default'}
           onConfirm={handleToggleStatus}
           isLoading={toggleStatusMutation.isPending}
         />

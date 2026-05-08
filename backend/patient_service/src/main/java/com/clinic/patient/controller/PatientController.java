@@ -30,6 +30,33 @@ public class PatientController {
         return service.getById(id);
     }
 
+    @GetMapping("/me")
+    public PatientResponse getMe(@RequestHeader("X-User-Id") String userId) {
+        return service.getByUserId(UUID.fromString(userId));
+    }
+
+    @GetMapping("/user/{userId}")
+    public PatientResponse getByUserId(@PathVariable UUID userId) {
+        return service.getByUserId(userId);
+    }
+
+    @GetMapping("/{id}/visits")
+    public Object getVisits(@PathVariable UUID id) {
+        return service.getVisitsForPatient(id);
+    }
+
+    @GetMapping("/me/visits")
+    public Object getMyVisits(@RequestHeader("X-User-Id") String userId) {
+        PatientResponse p = service.getByUserId(UUID.fromString(userId));
+        return service.getVisitsForPatient(p.getId());
+    }
+
+    @GetMapping("/me/invoices")
+    public Object getMyInvoices(@RequestHeader("X-User-Id") String userId) {
+        PatientResponse p = service.getByUserId(UUID.fromString(userId));
+        return service.getInvoicesForPatient(p.getId());
+    }
+
     @PutMapping("/{id}")
     public PatientResponse update(@PathVariable UUID id, @RequestBody PatientRequest req){
         return service.update(id, req);

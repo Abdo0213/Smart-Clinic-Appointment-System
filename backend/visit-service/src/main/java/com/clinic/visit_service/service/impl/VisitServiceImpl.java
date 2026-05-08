@@ -11,6 +11,7 @@ import com.clinic.visit_service.mapper.VisitMapper;
 import com.clinic.visit_service.repository.PrescriptionRepository;
 import com.clinic.visit_service.repository.VisitRepository;
 import com.clinic.visit_service.service.VisitService;
+import com.clinic.visit_service.exception.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -272,5 +273,31 @@ public class VisitServiceImpl implements VisitService {
             log.error("Error fetching appointment details: {}", e.getMessage());
             throw new RuntimeException("Could not connect to Appointment Service");
         }
+    }
+
+    @Override
+    public java.util.List<PrescriptionResponse> getPrescriptionsForVisit(UUID visitId) {
+        if (!visitRepository.existsById(visitId)) {
+            throw new ResourceNotFoundException("Visit not found");
+        }
+        return prescriptionRepository.findByVisitId(visitId).stream()
+                .map(prescriptionMapper::toResponse)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Override
+    public PrescriptionPdfResponse getPrescriptionPdfUrl(UUID visitId, UUID prescriptionId) {
+        Prescription prescription = prescriptionRepository.findById(prescriptionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Prescription not found"));
+
+        if (!prescription.getVisit().getId().equals(visitId)) {
+            throw new ValidationException("Prescription does not belong to this visit");
+        }
+
+        // Dummy pre-signed URL generation
+        return PrescriptionPdfResponse.builder()
+                .downloadUrl("https://dummy-s3-pre-signed-url.com/" + prescription.getPdfKey() + "?token=" + UUID.randomUUID())
+                .expiresAt(LocalDateTime.now().plusHours(1))
+                .build();
     }
 }

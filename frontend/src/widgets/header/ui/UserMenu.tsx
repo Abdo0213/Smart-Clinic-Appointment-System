@@ -4,7 +4,7 @@ import { useAuthStore } from '@/features/auth'
 import { LogoutButton } from '@/features/auth/ui/LogoutButton'
 import type { AuthUser } from '@/features/auth/model/types'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { UserIcon, SettingsIcon } from 'lucide-react'
 import Link from 'next/link'
 import { ROUTE_PATHS } from '@/shared/config/appConfig'
@@ -29,15 +29,25 @@ export function UserMenu({ user }: UserMenuProps) {
         </span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium">{user.firstName} {user.lastName}</p>
-            <p className="text-xs text-muted-foreground">{role}</p>
-          </div>
-        </DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-medium">{user.firstName} {user.lastName}</p>
+              <p className="text-xs text-muted-foreground">{role}</p>
+            </div>
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem>
-          <Link href={role === 'Patient' ? ROUTE_PATHS.PATIENT_PROFILE : role === 'Doctor' ? ROUTE_PATHS.DOCTOR_PROFILE : ROUTE_PATHS.ADMIN_DASHBOARD} className="flex cursor-pointer items-center gap-2">
+          <Link 
+            href={
+              role === 'Patient' ? ROUTE_PATHS.PATIENT_PROFILE : 
+              role === 'Doctor' ? ROUTE_PATHS.DOCTOR_PROFILE : 
+              role === 'Admin' ? ROUTE_PATHS.ADMIN_PROFILE :
+              ROUTE_PATHS.ADMIN_DASHBOARD
+            } 
+            className="flex cursor-pointer items-center gap-2"
+          >
             <UserIcon className="size-4" />
             Profile
           </Link>

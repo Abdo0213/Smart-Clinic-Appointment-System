@@ -239,4 +239,62 @@ public class DoctorServiceImpl implements DoctorService {
         }
         return false;
     }
+
+    @Override
+    public DoctorResponseDTO getDoctorByUserId(UUID userId) {
+        Doctor doctor = doctorRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found for user: " + userId));
+        return doctorMapper.toResponseDto(doctor);
+    }
+
+    @Override
+    @Transactional
+    public ScheduleResponseDTO updateSchedule(UUID doctorId, UUID scheduleId, ScheduleRequestDTO request) {
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Schedule not found with id: " + scheduleId));
+
+        if (!schedule.getDoctor().getId().equals(doctorId)) {
+            throw new RuntimeException("Schedule does not belong to this doctor");
+        }
+
+        // Update fields
+        schedule.setDate(request.getDate());
+        schedule.setStartTime(request.getStartTime());
+        schedule.setEndTime(request.getEndTime());
+        schedule.setSlotDuration(request.getSlotDuration());
+        schedule.setPrice(request.getPrice());
+
+        // Validate no overlaps (excluding self)
+        List<Schedule> existingSchedules = scheduleRepository.findByDoctorIdAndDate(doctorId, schedule.getDate());
+        for (Schedule existing : existingSchedules) {
+            if (existing.getId().equals(scheduleId)) continue;
+            
+            if (schedule.getStartTime().isBefore(existing.getEndTime()) &&
+                    schedule.getEndTime().isAfter(existing.getStartTime())) {
+                throw new ScheduleConflictException(
+                        "Selected schedule overlaps with an existing schedule for this doctor on the same day.");
+            }
+        }
+
+        // Handle breaks
+        if (request.getBreaks() != null) {
+            // Simple approach: clear and re-add
+            if (schedule.getBreaks() != null) {
+                schedule.getBreaks().clear();
+            } else {
+                schedule.setBreaks(new ArrayList<>());
+            }
+            
+            for (var breakDto : request.getBreaks()) {
+                ScheduleBreak b = new ScheduleBreak();
+                b.setBreakStart(breakDto.getBreakStart());
+                b.setBreakEnd(breakDto.getBreakEnd());
+                b.setSchedule(schedule);
+                schedule.getBreaks().add(b);
+            }
+        }
+
+        Schedule savedSchedule = scheduleRepository.save(schedule);
+        return doctorMapper.toResponseDto(savedSchedule);
+    }
 }

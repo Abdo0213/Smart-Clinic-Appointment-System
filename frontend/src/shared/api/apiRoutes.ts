@@ -7,20 +7,26 @@ export const API_ROUTES = {
     LOGOUT: "/auth/logout",
   },
   USERS: {
-    LIST: "/users",
+    LIST: "/admin/users",
     DETAIL: (id: string) => `/users/${id}`,
     CREATE: "/users",
   },
   DOCTORS: {
     LIST: "/doctors",
     DETAIL: (id: string) => `/doctors/${id}`,
+    ME: "/doctors/me",
     STATUS: (id: string) => `/doctors/${id}/status`,
     SCHEDULES: (id: string) => `/doctors/${id}/schedules`,
+    SCHEDULE_DETAIL: (id: string, scheduleId: string) => `/doctors/${id}/schedules/${scheduleId}`,
     SLOTS: (id: string) => `/doctors/${id}/slots`,
   },
   PATIENTS: {
     LIST: "/patients",
     DETAIL: (id: string) => `/patients/${id}`,
+    ME: "/patients/me",
+    MY_VISITS: "/patients/me/visits",
+    MY_INVOICES: "/patients/me/invoices",
+    VISITS: (id: string) => `/patients/${id}/visits`,
     CREATE: "/patients",
   },
   APPOINTMENTS: {
@@ -36,7 +42,7 @@ export const API_ROUTES = {
     SIGN: (id: string) => `/visits/${id}/sign`,
     PRESCRIPTIONS: (id: string) => `/visits/${id}/prescriptions`,
     FOLLOW_UP: (id: string) => `/visits/${id}/follow-up`,
-    PRESCRIPTION_PDF: (id: string) => `/visits/${id}/prescriptions/pdf`,
+    PRESCRIPTION_PDF: (id: string, prescriptionId: string) => `/visits/${id}/prescriptions/${prescriptionId}/pdf`,
   },
   BILLING: {
     INVOICES: "/billing/invoices",
@@ -45,6 +51,7 @@ export const API_ROUTES = {
     WAIVE: (id: string) => `/billing/invoices/${id}/waive`,
   },
   ADMIN: {
+    DASHBOARD: "/admin/dashboard",
     REPORTS_APPOINTMENTS: "/admin/reports/appointments",
     REPORTS_REVENUE: "/admin/reports/revenue",
     REPORTS_VISITS: "/admin/reports/visits",

@@ -26,4 +26,6 @@ public class InvoiceDTO {
     private LocalDateTime paidAt;
     private String waivedBy;
     private String waiverReason;
+    private String patientName;
+    private String invoiceNumber;
 }

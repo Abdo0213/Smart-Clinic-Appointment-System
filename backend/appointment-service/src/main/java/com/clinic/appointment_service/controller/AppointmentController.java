@@ -75,4 +75,16 @@ public class AppointmentController {
             @Valid @RequestBody WaitlistRequestDTO request) {
         return new ResponseEntity<>(appointmentService.addToWaitlist(request), HttpStatus.CREATED);
     }
+
+    @GetMapping("/{id}/waitlist")
+    public ResponseEntity<java.util.List<WaitlistResponseDTO>> getWaitlist(@PathVariable UUID id) {
+        return ResponseEntity.ok(appointmentService.getWaitlistForAppointment(id));
+    }
+
+    @PatchMapping("/{id}/reschedule")
+    public ResponseEntity<AppointmentResponseDTO> reschedule(
+            @PathVariable UUID id,
+            @Valid @RequestBody RescheduleRequestDTO request) {
+        return ResponseEntity.ok(appointmentService.rescheduleAppointment(id, request));
+    }
 }

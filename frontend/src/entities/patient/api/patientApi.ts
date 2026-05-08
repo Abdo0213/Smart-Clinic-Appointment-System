@@ -25,4 +25,19 @@ export const patientApi = {
     const { data } = await apiClient.put<Patient>(API_ROUTES.PATIENTS.DETAIL(id), payload)
     return data
   },
+
+  async getMe(): Promise<Patient> {
+    const { data } = await apiClient.get<Patient>(API_ROUTES.PATIENTS.ME)
+    return data
+  },
+
+  async getMyVisits(): Promise<any> {
+    const { data } = await apiClient.get(API_ROUTES.PATIENTS.MY_VISITS)
+    return data
+  },
+
+  async getMyInvoices(): Promise<any> {
+    const { data } = await apiClient.get(API_ROUTES.PATIENTS.MY_INVOICES)
+    return data
+  },
 }

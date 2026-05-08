@@ -77,8 +77,9 @@ export default function InvoiceListPage() {
       header: 'Invoice #',
     },
     {
-      accessorKey: 'patientId',
+      accessorKey: 'patientName',
       header: 'Patient',
+      cell: ({ row }) => row.original.patientName ?? row.original.patientId,
     },
     {
       accessorKey: 'createdAt',
@@ -141,7 +142,7 @@ export default function InvoiceListPage() {
     },
   ]
 
-  const invoices = data?.data ?? []
+  const invoices = data?.content ?? []
   const totalPages = data?.totalPages ?? 0
 
   return (

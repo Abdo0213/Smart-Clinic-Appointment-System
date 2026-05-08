@@ -26,4 +26,9 @@ export const doctorApi = {
     })
     return data
   },
+  
+  async getMe(): Promise<Doctor> {
+    const { data } = await apiClient.get<Doctor>(API_ROUTES.DOCTORS.ME)
+    return data
+  },
 }

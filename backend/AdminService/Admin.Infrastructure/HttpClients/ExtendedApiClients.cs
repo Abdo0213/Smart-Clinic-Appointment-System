@@ -87,11 +87,14 @@ public class AuthApiClient : IAuthApiClient
         _httpClient = httpClient;
     }
 
-    public async Task<List<UserDto>?> GetUsersAsync()
+    public async Task<PaginatedResponse<UserDto>?> GetUsersAsync(int page = 0, int size = 10, string? search = null)
     {
-        var response = await _httpClient.GetAsync("/api/users");
-        if (!response.IsSuccessStatusCode) return new List<UserDto>();
-        return await response.Content.ReadFromJsonAsync<List<UserDto>>();
+        var url = $"/api/users?page={page}&size={size}";
+        if (!string.IsNullOrEmpty(search)) url += $"&search={search}";
+
+        var response = await _httpClient.GetAsync(url);
+        if (!response.IsSuccessStatusCode) return new PaginatedResponse<UserDto>();
+        return await response.Content.ReadFromJsonAsync<PaginatedResponse<UserDto>>();
     }
 
     public async Task<ApiResponse<UserDto>?> GetUserAsync(string userId)

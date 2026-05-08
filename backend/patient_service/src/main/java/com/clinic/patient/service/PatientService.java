@@ -16,6 +16,13 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PatientService {
     private final PatientRepository repo;
+    private final org.springframework.web.client.RestTemplate restTemplate;
+
+    @org.springframework.beans.factory.annotation.Value("${services.visit.url}")
+    private String visitServiceUrl;
+
+    @org.springframework.beans.factory.annotation.Value("${services.billing.url}")
+    private String billingServiceUrl;
 
     public PatientResponse create(PatientRequest req) {
         Patient p = new Patient();
@@ -29,6 +36,11 @@ public class PatientService {
 
     public PatientResponse getById(UUID id) {
         Patient p = repo.findById(id).orElseThrow(() -> new RuntimeException("Patient Not Found"));
+        return mapToResponse(p);
+    }
+
+    public PatientResponse getByUserId(UUID userId) {
+        Patient p = repo.findByUserId(userId).orElseThrow(() -> new RuntimeException("Patient Not Found for this user"));
         return mapToResponse(p);
     }
 
@@ -86,5 +98,15 @@ public class PatientService {
             .createdAt(p.getCreatedAt())
             .updatedAt(p.getUpdatedAt())
             .build();
+    }
+
+    public Object getVisitsForPatient(UUID patientId) {
+        String url = visitServiceUrl + "?patientId=" + patientId;
+        return restTemplate.getForObject(url, Object.class);
+    }
+
+    public Object getInvoicesForPatient(UUID patientId) {
+        String url = billingServiceUrl + "?patientId=" + patientId;
+        return restTemplate.getForObject(url, Object.class);
     }
 }

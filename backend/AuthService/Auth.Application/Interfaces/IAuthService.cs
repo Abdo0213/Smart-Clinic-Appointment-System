@@ -1,9 +1,5 @@
 using Auth.Application.DTOs.Auth;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Auth.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 
 namespace Auth.Application.Interfaces
@@ -11,6 +7,23 @@ namespace Auth.Application.Interfaces
     public interface IAuthService
     {
         Task<(IdentityResult Result, string? UserId)> RegisterAsync(RegisterDto model);
-        Task<(string? Token, string? Error)> LoginAsync(LoginDto model);
+        Task<(AuthResponseDto? Response, string? Error)> LoginAsync(LoginDto model);
+        Task<(AuthResponseDto? Response, string? Error)> RefreshTokenAsync(string token, string refreshToken);
+        Task<bool> LogoutAsync(string userId);
+        Task<object?> GetProfileAsync(string userId);
+        Task<(bool Success, string? Error)> UpdateProfileAsync(string userId, UpdateProfileDto model);
+    }
+
+    public class UpdateProfileDto
+    {
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+    }
+
+    public class AuthResponseDto
+    {
+        public string Token { get; set; } = null!;
+        public string RefreshToken { get; set; } = null!;
+        public object? Profile { get; set; }
     }
 }

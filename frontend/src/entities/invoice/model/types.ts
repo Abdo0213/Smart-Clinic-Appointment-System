@@ -30,6 +30,7 @@ export interface Invoice {
   waivedAt: string | null
   waivedReason: string | null
   invoiceNumber: string
+  patientName?: string
 }
 
 export interface CreateInvoiceRequest {
@@ -47,8 +48,8 @@ export interface InvoiceFilters {
 }
 
 export interface InvoiceListResponse {
-  data: Invoice[]
-  total: number
+  content: Invoice[]
+  totalElements: number
   page: number
   size: number
   totalPages: number

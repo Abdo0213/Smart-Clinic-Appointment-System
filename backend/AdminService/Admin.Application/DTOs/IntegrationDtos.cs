@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Admin.Application.DTOs;
 
 public class AppointmentDto
@@ -34,10 +36,14 @@ public class VisitDto
 
 public class DoctorDto
 {
+    [JsonPropertyName("id")]
     public string Id { get; set; } = string.Empty;
+    [JsonPropertyName("userId")]
+    public string UserId { get; set; } = string.Empty;
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public string Specialization { get; set; } = string.Empty;
+    [JsonPropertyName("isActive")]
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
 }
@@ -63,6 +69,11 @@ public class UserDto
     public string Id { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string UserName { get; set; } = string.Empty;
+    public string Role { get; set; } = string.Empty;
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
+    [JsonPropertyName("isActive")]
+    public bool? IsActive { get; set; }
 }
 
 public class UpdateUserDto

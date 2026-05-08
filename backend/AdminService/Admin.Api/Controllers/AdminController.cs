@@ -40,13 +40,80 @@ public class AdminController : ControllerBase
         _dbContext = dbContext;
         _reportStorage = reportStorage;
     }
+    
+    // GET /admin/dashboard
+    [HttpGet("dashboard")]
+    public async Task<IActionResult> GetDashboardSummary([FromQuery] string? from, [FromQuery] string? to)
+    {
+        // Default to today if no range provided
+        var dateFrom = from ?? DateTime.UtcNow.ToString("yyyy-MM-dd");
+        var dateTo = to ?? DateTime.UtcNow.ToString("yyyy-MM-dd");
+
+        // 1. Get appointments in range
+        var appointmentsResponse = await _appointmentApiClient.GetAppointmentsAsync(dateFrom, dateTo, null);
+        var appointments = appointmentsResponse?.Content ?? new List<AppointmentDto>();
+
+        // 2. Get pending invoices
+        var billingResponse = await _billingApiClient.GetInvoicesAsync(dateFrom, dateTo);
+        var invoices = billingResponse?.Content ?? new List<InvoiceDto>();
+
+        // 3. Get doctor status
+        var doctorsResponse = await _doctorApiClient.GetDoctorsAsync(null);
+        var doctors = doctorsResponse?.Content ?? new List<DoctorDto>();
+
+        var summary = new
+        {
+            appointments = new
+            {
+                total = appointments.Count,
+                confirmed = appointments.Count(a => a.Status == "CONFIRMED"),
+                pending = appointments.Count(a => a.Status == "REQUESTED"),
+                cancelled = appointments.Count(a => a.Status == "CANCELLED")
+            },
+            revenue = new
+            {
+                totalBilled = invoices.Sum(i => i.TotalAmount),
+                pendingCollected = invoices.Where(i => i.Status == "PENDING").Sum(i => i.TotalAmount)
+            },
+            staff = new
+            {
+                activeDoctors = doctors.Count(d => d.IsActive),
+                totalDoctors = doctors.Count
+            }
+        };
+
+        return Ok(summary);
+    }
 
     // GET /admin/users
     [HttpGet("users")]
-    public async Task<IActionResult> GetUsers()
+    public async Task<IActionResult> GetUsers([FromQuery] int page = 0, [FromQuery] int size = 10, [FromQuery] string? search = null)
     {
-        var users = await _authApiClient.GetUsersAsync();
-        return Ok(users);
+        var usersResponse = await _authApiClient.GetUsersAsync(page, size, search);
+        if (usersResponse == null) return Ok(new PaginatedResponse<UserDto>());
+
+        var users = usersResponse.Content;
+
+        // Enrich with Doctor status
+        var doctorsResponse = await _doctorApiClient.GetDoctorsAsync(null);
+        var doctors = doctorsResponse?.Content ?? new List<DoctorDto>();
+        
+        // Use GroupBy to handle potential duplicate UserIds gracefully
+        var doctorMap = doctors
+            .Where(d => !string.IsNullOrEmpty(d.UserId))
+            .GroupBy(d => d.UserId)
+            .ToDictionary(g => g.Key, g => g.First().IsActive, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var user in users)
+        {
+            if (string.Equals(user.Role, "Doctor", StringComparison.OrdinalIgnoreCase) && 
+                doctorMap.TryGetValue(user.Id, out var isActive))
+            {
+                user.IsActive = isActive;
+            }
+        }
+
+        return Ok(usersResponse);
     }
 
     // GET /admin/users/{userId}
@@ -255,7 +322,21 @@ public class AdminController : ControllerBase
     [HttpPatch("doctors/{doctorId}/status")]
     public async Task<IActionResult> UpdateDoctorStatus(string doctorId, [FromQuery] bool isActive)
     {
+        // Try directly first (it might be a doctorId)
         var success = await _doctorApiClient.UpdateDoctorStatusAsync(doctorId, isActive);
+        
+        if (!success)
+        {
+            // Try resolving if it was a userId
+            var doctorsResponse = await _doctorApiClient.GetDoctorsAsync(null);
+            var doctor = doctorsResponse?.Content?.FirstOrDefault(d => d.UserId == doctorId);
+            
+            if (doctor != null)
+            {
+                success = await _doctorApiClient.UpdateDoctorStatusAsync(doctor.Id, isActive);
+            }
+        }
+
         if (!success) return BadRequest(new { message = "Failed to update doctor status" });
         return NoContent();
     }

@@ -21,7 +21,7 @@ public interface IPatientApiClient
 
 public interface IAuthApiClient
 {
-    Task<List<UserDto>?> GetUsersAsync();
+    Task<PaginatedResponse<UserDto>?> GetUsersAsync(int page = 0, int size = 10, string? search = null);
     Task<ApiResponse<UserDto>?> GetUserAsync(string userId);
     Task<ApiResponse<UserDto>?> UpdateUserAsync(string userId, object updateRequest);
 }

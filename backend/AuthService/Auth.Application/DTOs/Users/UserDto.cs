@@ -8,5 +8,7 @@ namespace Auth.Application.DTOs.Users
 
         public string UserName { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
     }
 }

@@ -46,8 +46,8 @@ export function Sidebar() {
               key={item.href}
               variant={isActive ? 'secondary' : 'ghost'}
               className={cn('w-full justify-start gap-2', isActive && 'bg-accent font-medium')}
-              onClick={() => {}}
               render={<Link href={item.href} />}
+              nativeButton={false}
             >
               <Icon className="size-4" />
               {item.label}

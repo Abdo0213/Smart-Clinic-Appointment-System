@@ -23,25 +23,39 @@ function hydrateFromStorage(): { token: string | null; user: AuthUser | null; is
     return { token: null, user: null, isAuthenticated: false };
   }
   const token = localStorage.getItem("auth_token");
+  const userJson = localStorage.getItem("auth_user");
+  
   if (!token || isTokenExpired(token)) {
-    if (token) localStorage.removeItem("auth_token");
+    if (token) {
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("refresh_token");
+      localStorage.removeItem("auth_user");
+    }
     return { token: null, user: null, isAuthenticated: false };
   }
-  const payload = decodeJwt(token);
-  if (!payload) {
-    localStorage.removeItem("auth_token");
-    return { token: null, user: null, isAuthenticated: false };
+  
+  let user: AuthUser | null = null;
+  if (userJson) {
+    try {
+      user = JSON.parse(userJson);
+    } catch {
+      // If parsing fails, fall back to JWT decode
+      const payload = decodeJwt(token);
+      if (payload) {
+        user = {
+          id: payload.sub || "",
+          email: payload.email || "",
+          firstName: payload.firstName || "",
+          lastName: payload.lastName || "",
+          role: (payload.role as UserRole) || "Patient",
+          doctorId: payload.doctorId || null,
+          patientId: payload.patientId || null,
+        };
+      }
+    }
   }
-  const user: AuthUser = {
-    id: payload.sub || "",
-    email: payload.email || "",
-    firstName: payload.firstName || "",
-    lastName: payload.lastName || "",
-    role: (payload.role as UserRole) || "Patient",
-    doctorId: payload.doctorId || null,
-    patientId: payload.patientId || null,
-  };
-  return { token, user, isAuthenticated: true };
+  
+  return { token, user, isAuthenticated: !!user };
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -53,20 +67,14 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: async (email: string, password: string) => {
     set({ isLoading: true });
     try {
-      const { data } = await apiClient.post(API_ROUTES.AUTH.LOGIN, { email, password });
-      const token = data.token;
-      const payload = decodeJwt(token);
-      const user: AuthUser = {
-        id: payload?.sub || "",
-        email: payload?.email || email,
-        firstName: payload?.firstName || "",
-        lastName: payload?.lastName || "",
-        role: (payload?.role as UserRole) || "Patient",
-        doctorId: payload?.doctorId || null,
-        patientId: payload?.patientId || null,
-      };
+      const { data } = await apiClient.post<AuthResponse>(API_ROUTES.AUTH.LOGIN, { email, password });
+      const { token, refreshToken, profile } = data;
+      
       localStorage.setItem("auth_token", token);
-      set({ user, token, isAuthenticated: true, isLoading: false });
+      localStorage.setItem("refresh_token", refreshToken);
+      localStorage.setItem("auth_user", JSON.stringify(profile));
+      
+      set({ user: profile, token, isAuthenticated: true, isLoading: false });
     } catch (error) {
       set({ isLoading: false });
       throw error;
@@ -76,8 +84,13 @@ export const useAuthStore = create<AuthState>((set) => ({
   register: async (registerData: RegisterRequest) => {
     set({ isLoading: true });
     try {
+      // Registration typically doesn't return full profile immediately in some setups,
+      // but let's assume it does now if we update backend, or we just use token.
       const { data } = await apiClient.post(API_ROUTES.AUTH.REGISTER, registerData);
       const token = data.token;
+      
+      // If registration doesn't return profile, we might need a separate call
+      // or decode JWT as fallback. For now, let's just decode as fallback.
       const payload = decodeJwt(token);
       const user: AuthUser = {
         id: payload?.sub || "",
@@ -88,7 +101,10 @@ export const useAuthStore = create<AuthState>((set) => ({
         doctorId: payload?.doctorId || null,
         patientId: payload?.patientId || null,
       };
+      
       localStorage.setItem("auth_token", token);
+      localStorage.setItem("auth_user", JSON.stringify(user));
+      
       set({ user, token, isAuthenticated: true, isLoading: false });
     } catch (error) {
       set({ isLoading: false });
@@ -98,10 +114,15 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: () => {
     localStorage.removeItem("auth_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("auth_user");
     set({ user: null, token: null, isAuthenticated: false, isLoading: false });
   },
 
-  setUser: (user: AuthUser) => set({ user, isAuthenticated: true }),
+  setUser: (user: AuthUser) => {
+    localStorage.setItem("auth_user", JSON.stringify(user));
+    set({ user, isAuthenticated: true });
+  },
 
   setToken: (token: string) => {
     localStorage.setItem("auth_token", token);

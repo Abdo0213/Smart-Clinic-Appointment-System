@@ -25,4 +25,8 @@ public interface AppointmentService {
     java.util.List<AppointmentResponseDTO> getAllAppointmentsWithoutPagination();
 
     WaitlistResponseDTO addToWaitlist(WaitlistRequestDTO request);
+    
+    AppointmentResponseDTO rescheduleAppointment(UUID id, RescheduleRequestDTO request);
+    
+    java.util.List<WaitlistResponseDTO> getWaitlistForAppointment(UUID appointmentId);
 }

@@ -7,6 +7,8 @@ import type { AppointmentStatus } from './types'
  * COMPLETED, CANCELLED, NO_SHOW → (terminal, no transitions)
  */
 export const VALID_TRANSITIONS: Record<AppointmentStatus, AppointmentStatus[]> = {
+  REQUESTED: ['CONFIRMED', 'CANCELLED'],
+  CONFIRMED: ['ARRIVED', 'CANCELLED'],
   BOOKED: ['ARRIVED', 'CANCELLED'],
   ARRIVED: ['COMPLETED', 'CANCELLED', 'NO_SHOW'],
   COMPLETED: [],

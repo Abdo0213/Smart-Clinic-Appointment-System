@@ -41,6 +41,8 @@ export interface UpdateUserRequest {
 
 export interface AuthResponse {
   token: string;
+  refreshToken: string;
+  profile: AuthUser;
 }
 
 export interface AuthState {

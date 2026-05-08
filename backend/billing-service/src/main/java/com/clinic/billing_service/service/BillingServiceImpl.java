@@ -1,6 +1,7 @@
 package com.clinic.billing_service.service;
 
 import com.clinic.billing_service.dto.*;
+import com.clinic.billing_service.dto.external.PatientDTO;
 import com.clinic.billing_service.entity.Invoice;
 import com.clinic.billing_service.entity.InvoiceStatus;
 import com.clinic.billing_service.entity.LineItem;
@@ -86,14 +87,18 @@ public class BillingServiceImpl implements BillingService {
         // 4. Update appointment status to CONFIRMED (8084)
         updateAppointmentStatus(request.getAppointmentId(), "CONFIRMED");
 
-        return mapToDTO(savedInvoice);
+        InvoiceDTO response = mapToDTO(savedInvoice);
+        populateDetails(response);
+        return response;
     }
 
     @Override
     public InvoiceDTO getInvoiceById(UUID id) {
         Invoice invoice = invoiceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Invoice not found with id: " + id));
-        return mapToDTO(invoice);
+        InvoiceDTO response = mapToDTO(invoice);
+        populateDetails(response);
+        return response;
     }
 
     @Override
@@ -112,7 +117,11 @@ public class BillingServiceImpl implements BillingService {
         } else {
             invoices = invoiceRepository.findAll(pageable);
         }
-        return invoices.map(this::mapToDTO);
+        return invoices.map(invoice -> {
+            InvoiceDTO dto = mapToDTO(invoice);
+            populateDetails(dto);
+            return dto;
+        });
     }
 
     @Override
@@ -142,7 +151,9 @@ public class BillingServiceImpl implements BillingService {
         });
 
         invoice.calculateTotal();
-        return mapToDTO(invoiceRepository.save(invoice));
+        InvoiceDTO response = mapToDTO(invoiceRepository.save(invoice));
+        populateDetails(response);
+        return response;
     }
 
     @Override
@@ -157,7 +168,9 @@ public class BillingServiceImpl implements BillingService {
 
         invoice.setStatus(InvoiceStatus.PAID);
         invoice.setPaidAt(LocalDateTime.now());
-        return mapToDTO(invoiceRepository.save(invoice));
+        InvoiceDTO response = mapToDTO(invoiceRepository.save(invoice));
+        populateDetails(response);
+        return response;
     }
 
     @Override
@@ -174,7 +187,9 @@ public class BillingServiceImpl implements BillingService {
         invoice.setWaiverReason(request.getReason());
         // In a real app, you'd get the admin name from the security context
         invoice.setWaivedBy("ADMIN");
-        return mapToDTO(invoiceRepository.save(invoice));
+        InvoiceDTO response = mapToDTO(invoiceRepository.save(invoice));
+        populateDetails(response);
+        return response;
     }
 
     private void checkPatientExists(UUID patientId) {
@@ -247,5 +262,26 @@ public class BillingServiceImpl implements BillingService {
                                 .build())
                         .collect(Collectors.toList()))
                 .build();
+    }
+
+    private void populateDetails(InvoiceDTO dto) {
+        // Populate invoice number
+        if (dto.getId() != null) {
+            dto.setInvoiceNumber("INV-" + dto.getId().toString().substring(0, 8).toUpperCase());
+        }
+
+        // Populate patient name
+        try {
+            ResponseEntity<PatientDTO> response = restTemplate.getForEntity(
+                    patientServiceUrl + "/" + dto.getPatientId(),
+                    PatientDTO.class);
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                PatientDTO patient = response.getBody();
+                dto.setPatientName(patient.getFirstName() + " " + patient.getLastName());
+            }
+        } catch (Exception e) {
+            log.error("Failed to fetch patient name for ID {}: {}", dto.getPatientId(), e.getMessage());
+            dto.setPatientName("Patient (" + dto.getPatientId().toString().substring(0, 8) + ")");
+        }
     }
 }

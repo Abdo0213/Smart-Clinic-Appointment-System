@@ -18,4 +18,7 @@ public interface VisitService {
     FollowUpResponse scheduleFollowUp(UUID visitId, FollowUpRequest request);
     java.util.List<VisitResponse> getAllVisitsWithoutPagination();
     java.util.List<LineItemRequest> getBillingOptions();
+    
+    java.util.List<PrescriptionResponse> getPrescriptionsForVisit(UUID visitId);
+    PrescriptionPdfResponse getPrescriptionPdfUrl(UUID visitId, UUID prescriptionId);
 }

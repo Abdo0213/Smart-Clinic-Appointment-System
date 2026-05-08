@@ -81,4 +81,16 @@ public class VisitController {
     public ResponseEntity<java.util.List<LineItemRequest>> getBillingOptions() {
         return ResponseEntity.ok(visitService.getBillingOptions());
     }
+
+    @GetMapping("/{id}/prescriptions")
+    public ResponseEntity<java.util.List<PrescriptionResponse>> getPrescriptions(@PathVariable UUID id) {
+        return ResponseEntity.ok(visitService.getPrescriptionsForVisit(id));
+    }
+
+    @GetMapping("/{id}/prescriptions/{prescriptionId}/pdf")
+    public ResponseEntity<PrescriptionPdfResponse> getPrescriptionPdf(
+            @PathVariable UUID id,
+            @PathVariable UUID prescriptionId) {
+        return ResponseEntity.ok(visitService.getPrescriptionPdfUrl(id, prescriptionId));
+    }
 }

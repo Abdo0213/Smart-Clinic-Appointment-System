@@ -64,18 +64,15 @@ public class JwtUtil {
 
     public String getUserId(String token) {
         Claims claims = getAllClaimsFromToken(token);
-        // Usually .NET identity user id is "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
-        // or "nameid" or "sub" or "userId"
+        // Standard .NET Identity claim
         Object userIdObj = claims.get("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
-        if (userIdObj == null) {
-            userIdObj = claims.get("nameid");
-        }
-        if (userIdObj == null) {
-            userIdObj = claims.get("sub");
-        }
-        if (userIdObj == null) {
-            userIdObj = claims.get("userId");
-        }
+        
+        if (userIdObj == null) userIdObj = claims.get("nameid");
+        if (userIdObj == null) userIdObj = claims.get("userId");
+        if (userIdObj == null) userIdObj = claims.get("id");
+        if (userIdObj == null) userIdObj = claims.get("uid");
+        if (userIdObj == null) userIdObj = claims.get("sub");
+        
         return userIdObj != null ? userIdObj.toString() : null;
     }
 }

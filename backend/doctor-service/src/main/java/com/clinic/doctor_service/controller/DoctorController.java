@@ -65,6 +65,24 @@ public class DoctorController {
         return ResponseEntity.ok(doctorService.getSchedulesByDoctorId(id));
     }
 
+    @PutMapping("/{id}/schedules/{scheduleId}")
+    public ResponseEntity<ScheduleResponseDTO> updateSchedule(
+            @PathVariable UUID id,
+            @PathVariable UUID scheduleId,
+            @Valid @RequestBody ScheduleRequestDTO request) {
+        return ResponseEntity.ok(doctorService.updateSchedule(id, scheduleId, request));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<DoctorResponseDTO> getMe(@RequestHeader("X-User-Id") String userId) {
+        return ResponseEntity.ok(doctorService.getDoctorByUserId(UUID.fromString(userId)));
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<DoctorResponseDTO> getByUserId(@PathVariable UUID userId) {
+        return ResponseEntity.ok(doctorService.getDoctorByUserId(userId));
+    }
+
     @GetMapping("/{id}/slots")
     public ResponseEntity<SlotResponseDTO> getSlots(
             @PathVariable UUID id,

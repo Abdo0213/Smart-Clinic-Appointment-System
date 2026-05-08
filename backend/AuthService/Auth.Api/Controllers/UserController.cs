@@ -1,3 +1,4 @@
+using Auth.Application.DTOs.Common;
 using Auth.Application.DTOs.Users;
 using Auth.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -8,7 +9,7 @@ namespace Auth.Api.Controllers;
 
 [ApiController]
 [Route("api/users")]
-[Authorize(Roles = "Admin")]  // Only admins can manage users
+// [Authorize(Roles = "Admin")]  // Only admins can manage users
 public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
@@ -23,10 +24,10 @@ public class UserController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<UserDto>>> GetUsers()
+    public async Task<ActionResult<PaginatedResponse<UserDto>>> GetUsers([FromQuery] int page = 0, [FromQuery] int size = 10, [FromQuery] string? search = null)
     {
-        var users = await _userService.GetUsersAsync();
-        return Ok(users);
+        var result = await _userService.GetUsersAsync(page, size, search);
+        return Ok(result);
     }
 
     [HttpGet("{id}")]

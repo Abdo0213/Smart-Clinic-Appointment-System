@@ -26,6 +26,7 @@ export const ROUTE_PATHS = {
   RECEPTION_APPOINTMENTS: "/reception/appointments",
   RECEPTION_BILLING: "/reception/billing",
   ADMIN_DASHBOARD: "/admin",
+  ADMIN_PROFILE: "/admin/profile",
   ADMIN_USERS: "/admin/users",
   ADMIN_DOCTORS: "/admin/doctors",
   ADMIN_PATIENTS: "/admin/patients",
@@ -57,6 +58,7 @@ const ROLE_SIDEBAR_ITEMS: Record<UserRole, SidebarItem[]> = {
   ],
   Admin: [
     { label: "Dashboard", href: ROUTE_PATHS.ADMIN_DASHBOARD, icon: "LayoutDashboard" },
+    { label: "Profile", href: ROUTE_PATHS.ADMIN_PROFILE, icon: "User" },
     { label: "Users", href: ROUTE_PATHS.ADMIN_USERS, icon: "UserCog" },
     { label: "Doctors", href: ROUTE_PATHS.ADMIN_DOCTORS, icon: "Stethoscope" },
     { label: "Patients", href: ROUTE_PATHS.ADMIN_PATIENTS, icon: "Users" },
@@ -101,6 +103,7 @@ const ROLE_ALLOWED_PATHS: Record<UserRole, string[]> = {
   ],
   Admin: [
     ROUTE_PATHS.ADMIN_DASHBOARD,
+    ROUTE_PATHS.ADMIN_PROFILE,
     ROUTE_PATHS.ADMIN_USERS,
     ROUTE_PATHS.ADMIN_DOCTORS,
     ROUTE_PATHS.ADMIN_PATIENTS,

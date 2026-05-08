@@ -30,43 +30,41 @@ import type { DateRange } from 'react-day-picker'
 import type { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
 
-interface AppointmentStat {
-  date: string
+interface AppointmentsReport {
+  totalAppointments: number
   completed: number
   cancelled: number
   noShow: number
+  records: any[]
 }
 
-interface RevenueStat {
-  date: string
-  billed: number
-  collected: number
+interface RevenueReport {
+  totalBilled: number
+  totalCollected: number
+  records: any[]
 }
 
-interface VisitStat {
-  date: string
-  total: number
-  signed: number
+interface VisitsReport {
+  totalVisits: number
+  signedVisits: number
+  records: any[]
 }
 
 interface DoctorUtilization {
   doctorName: string
-  utilization: number
-  totalAppointments: number
-  completedAppointments: number
-}
-
-interface PatientStat {
-  date: string
-  newPatients: number
-  returning: number
-}
-
-interface NoShowStat {
-  date: string
-  rate: number
+  utilizationPercent: number
   total: number
-  noShows: number
+}
+
+interface PatientsReport {
+  totalPatients: number
+  records: any[]
+}
+
+interface NoShowReport {
+  noShowRate: number
+  noShowCount: number
+  totalAppointments: number
 }
 
 const COLORS = ['#2563eb', '#16a34a', '#dc2626', '#9333ea', '#ea580c', '#0891b2']
@@ -90,44 +88,80 @@ export default function ReportsPage() {
   const from = dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined
   const to = dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined
 
-  const { data: appointmentStats, isLoading: appointmentsLoading } = useReportsQuery<AppointmentStat[]>('appointments', from, to)
-  const { data: revenueStats, isLoading: revenueLoading } = useReportsQuery<RevenueStat[]>('revenue', from, to)
-  const { data: visitStats, isLoading: visitsLoading } = useReportsQuery<VisitStat[]>('visits', from, to)
-  const { data: doctorStats, isLoading: doctorsLoading } = useReportsQuery<DoctorUtilization[]>('doctors', from, to)
-  const { data: patientStats, isLoading: patientsLoading } = useReportsQuery<PatientStat[]>('patients', from, to)
-  const { data: noShowStats, isLoading: noShowLoading } = useReportsQuery<NoShowStat[]>('no-show-rate', from, to)
+  const { data: appointmentData, isLoading: appointmentsLoading } = useReportsQuery<AppointmentsReport>('appointments', from, to)
+  const { data: revenueData, isLoading: revenueLoading } = useReportsQuery<RevenueReport>('revenue', from, to)
+  const { data: visitData, isLoading: visitsLoading } = useReportsQuery<VisitsReport>('visits', from, to)
+  const { data: doctorData, isLoading: doctorsLoading } = useReportsQuery<AppointmentsReport>('appointments', from, to)
+  const { data: patientData, isLoading: patientsLoading } = useReportsQuery<PatientsReport>('patients', from, to)
+  const { data: noShowData, isLoading: noShowLoading } = useReportsQuery<NoShowReport>('no-show-rate', from, to)
 
-  const appointmentColumns: ColumnDef<AppointmentStat>[] = [
-    { accessorKey: 'date', header: 'Date' },
-    { accessorKey: 'completed', header: 'Completed' },
-    { accessorKey: 'cancelled', header: 'Cancelled' },
-    { accessorKey: 'noShow', header: 'No-Show' },
+  // Grouping logic for charts
+  const getAppointmentStats = () => {
+    const records = appointmentData?.records ?? []
+    const groups: Record<string, any> = {}
+    records.forEach((r) => {
+      const date = format(new Date(r.createdAt), 'yyyy-MM-dd')
+      if (!groups[date]) groups[date] = { date, completed: 0, cancelled: 0, noShow: 0 }
+      if (r.status === 'COMPLETED') groups[date].completed++
+      if (r.status === 'CANCELLED') groups[date].cancelled++
+      if (r.status === 'NO_SHOW') groups[date].noShow++
+    })
+    return Object.values(groups).sort((a: any, b: any) => a.date.localeCompare(b.date))
+  }
+
+  const getRevenueStats = () => {
+    const records = revenueData?.records ?? []
+    const groups: Record<string, any> = {}
+    records.forEach((r) => {
+      const date = format(new Date(r.createdAt), 'yyyy-MM-dd')
+      if (!groups[date]) groups[date] = { date, billed: 0, collected: 0 }
+      groups[date].billed += r.totalAmount
+      if (r.status === 'PAID') groups[date].collected += r.totalAmount
+    })
+    return Object.values(groups).sort((a: any, b: any) => a.date.localeCompare(b.date))
+  }
+
+  const getVisitStats = () => {
+    const records = visitData?.records ?? []
+    const groups: Record<string, any> = {}
+    records.forEach((r) => {
+      const date = format(new Date(r.createdAt), 'yyyy-MM-dd')
+      if (!groups[date]) groups[date] = { date, total: 0, signed: 0 }
+      groups[date].total++
+      if (r.isSigned) groups[date].signed++
+    })
+    return Object.values(groups).sort((a: any, b: any) => a.date.localeCompare(b.date))
+  }
+
+  const getPatientStats = () => {
+    const records = patientData?.records ?? []
+    const groups: Record<string, any> = {}
+    records.forEach((r) => {
+      const date = format(new Date(r.createdAt), 'yyyy-MM-dd')
+      if (!groups[date]) groups[date] = { date, total: 0 }
+      groups[date].total++
+    })
+    return Object.values(groups).sort((a: any, b: any) => a.date.localeCompare(b.date))
+  }
+
+  const appointmentColumns: ColumnDef<any>[] = [
+    { accessorKey: 'createdAt', header: 'Date', cell: ({ row }) => format(new Date(row.original.createdAt), 'yyyy-MM-dd') },
+    { accessorKey: 'patientName', header: 'Patient' },
+    { accessorKey: 'doctorName', header: 'Doctor' },
+    { accessorKey: 'status', header: 'Status' },
   ]
 
-  const revenueColumns: ColumnDef<RevenueStat>[] = [
-    { accessorKey: 'date', header: 'Date' },
-    { accessorKey: 'billed', header: 'Billed', cell: ({ row }) => formatCurrency(row.original.billed) },
-    { accessorKey: 'collected', header: 'Collected', cell: ({ row }) => formatCurrency(row.original.collected) },
+  const revenueColumns: ColumnDef<any>[] = [
+    { accessorKey: 'createdAt', header: 'Date', cell: ({ row }) => format(new Date(row.original.createdAt), 'yyyy-MM-dd') },
+    { accessorKey: 'patientName', header: 'Patient' },
+    { accessorKey: 'totalAmount', header: 'Amount', cell: ({ row }) => formatCurrency(row.original.totalAmount) },
+    { accessorKey: 'status', header: 'Status' },
   ]
 
   const doctorColumns: ColumnDef<DoctorUtilization>[] = [
     { accessorKey: 'doctorName', header: 'Doctor' },
-    { accessorKey: 'utilization', header: 'Utilization %', cell: ({ row }) => `${row.original.utilization.toFixed(1)}%` },
-    { accessorKey: 'totalAppointments', header: 'Total Appts' },
-    { accessorKey: 'completedAppointments', header: 'Completed' },
-  ]
-
-  const patientColumns: ColumnDef<PatientStat>[] = [
-    { accessorKey: 'date', header: 'Date' },
-    { accessorKey: 'newPatients', header: 'New' },
-    { accessorKey: 'returning', header: 'Returning' },
-  ]
-
-  const noShowColumns: ColumnDef<NoShowStat>[] = [
-    { accessorKey: 'date', header: 'Date' },
-    { accessorKey: 'rate', header: 'Rate %', cell: ({ row }) => `${row.original.rate.toFixed(1)}%` },
-    { accessorKey: 'total', header: 'Total' },
-    { accessorKey: 'noShows', header: 'No-Shows' },
+    { accessorKey: 'utilizationPercent', header: 'Utilization %', cell: ({ row }) => `${row.original.utilizationPercent.toFixed(1)}%` },
+    { accessorKey: 'total', header: 'Total Appointments' },
   ]
 
   return (
@@ -161,7 +195,7 @@ export default function ReportsPage() {
                   <div className="flex justify-center py-12"><LoadingSpinner /></div>
                 ) : (
                   <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={appointmentStats ?? []}>
+                    <BarChart data={getAppointmentStats()}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="date" />
                       <YAxis />
@@ -176,7 +210,7 @@ export default function ReportsPage() {
             </Card>
             <DataTable
               columns={appointmentColumns}
-              data={appointmentStats ?? []}
+              data={appointmentData?.records ?? []}
               pagination={{ page: 0, pageSize: 20, totalPages: 1, onPageChange: () => {} }}
               isLoading={appointmentsLoading}
             />
@@ -192,7 +226,7 @@ export default function ReportsPage() {
                   <div className="flex justify-center py-12"><LoadingSpinner /></div>
                 ) : (
                   <ResponsiveContainer width="100%" height={350}>
-                    <LineChart data={revenueStats ?? []}>
+                    <LineChart data={getRevenueStats()}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="date" />
                       <YAxis />
@@ -206,7 +240,7 @@ export default function ReportsPage() {
             </Card>
             <DataTable
               columns={revenueColumns}
-              data={revenueStats ?? []}
+              data={revenueData?.records ?? []}
               pagination={{ page: 0, pageSize: 20, totalPages: 1, onPageChange: () => {} }}
               isLoading={revenueLoading}
             />
@@ -222,7 +256,7 @@ export default function ReportsPage() {
                   <div className="flex justify-center py-12"><LoadingSpinner /></div>
                 ) : (
                   <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={visitStats ?? []}>
+                    <BarChart data={getVisitStats()}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="date" />
                       <YAxis />
@@ -246,12 +280,12 @@ export default function ReportsPage() {
                   <div className="flex justify-center py-12"><LoadingSpinner /></div>
                 ) : (
                   <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={doctorStats ?? []} layout="vertical">
+                    <BarChart data={appointmentData?.byDoctor ?? []} layout="vertical">
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis type="number" domain={[0, 100]} unit="%" />
                       <YAxis dataKey="doctorName" type="category" width={120} />
                       <Tooltip formatter={(v) => `${Number(v).toFixed(1)}%`} />
-                      <Bar dataKey="utilization" fill="#9333ea" name="Utilization" />
+                      <Bar dataKey="utilizationPercent" fill="#9333ea" name="Utilization" />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
@@ -259,9 +293,9 @@ export default function ReportsPage() {
             </Card>
             <DataTable
               columns={doctorColumns}
-              data={doctorStats ?? []}
+              data={appointmentData?.byDoctor ?? []}
               pagination={{ page: 0, pageSize: 20, totalPages: 1, onPageChange: () => {} }}
-              isLoading={doctorsLoading}
+              isLoading={appointmentsLoading}
             />
           </TabsContent>
 
@@ -275,54 +309,56 @@ export default function ReportsPage() {
                   <div className="flex justify-center py-12"><LoadingSpinner /></div>
                 ) : (
                   <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={patientStats ?? []}>
+                    <BarChart data={getPatientStats()}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="date" />
                       <YAxis />
                       <Tooltip />
-                      <Bar dataKey="newPatients" fill="#0891b2" name="New" />
-                      <Bar dataKey="returning" fill="#2563eb" name="Returning" />
+                      <Bar dataKey="total" fill="#0891b2" name="New Patients" />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
               </CardContent>
             </Card>
             <DataTable
-              columns={patientColumns}
-              data={patientStats ?? []}
+              columns={[
+                { accessorKey: 'createdAt', header: 'Date', cell: ({ row }) => format(new Date(row.original.createdAt), 'yyyy-MM-dd') },
+                { accessorKey: 'firstName', header: 'First Name' },
+                { accessorKey: 'lastName', header: 'Last Name' },
+                { accessorKey: 'gender', header: 'Gender' },
+              ]}
+              data={patientData?.records ?? []}
               pagination={{ page: 0, pageSize: 20, totalPages: 1, onPageChange: () => {} }}
               isLoading={patientsLoading}
             />
           </TabsContent>
 
-          <TabsContent value="noshow" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">No-Show Rate</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {noShowLoading ? (
-                  <div className="flex justify-center py-12"><LoadingSpinner /></div>
-                ) : (
-                  <ResponsiveContainer width="100%" height={350}>
-                    <LineChart data={noShowStats ?? []}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="date" />
-                      <YAxis unit="%" />
-                      <Tooltip formatter={(v) => `${Number(v).toFixed(1)}%`} />
-                      <Line type="monotone" dataKey="rate" stroke="#ea580c" name="No-Show Rate" />
-                    </LineChart>
-                  </ResponsiveContainer>
-                )}
-              </CardContent>
-            </Card>
-            <DataTable
-              columns={noShowColumns}
-              data={noShowStats ?? []}
-              pagination={{ page: 0, pageSize: 20, totalPages: 1, onPageChange: () => {} }}
-              isLoading={noShowLoading}
-            />
-          </TabsContent>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">No-Show Rate</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{noShowData?.noShowRate.toFixed(1)}%</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">No-Show Count</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{noShowData?.noShowCount}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Total Appointments</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{noShowData?.totalAppointments}</div>
+                </CardContent>
+              </Card>
+            </div>
         </Tabs>
       </div>
     </AuthGuard>

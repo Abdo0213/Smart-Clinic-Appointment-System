@@ -14,4 +14,6 @@ public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
             Pageable pageable);
 
     Page<Doctor> findBySpecializationContainingIgnoreCase(String specialization, Pageable pageable);
+    
+    java.util.Optional<Doctor> findByUserId(UUID userId);
 }

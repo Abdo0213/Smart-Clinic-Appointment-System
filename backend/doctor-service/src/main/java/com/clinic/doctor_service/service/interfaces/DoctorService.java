@@ -14,8 +14,10 @@ public interface DoctorService {
     Page<DoctorResponseDTO> getAllDoctors(String specialization, Boolean isActive, Pageable pageable);
     DoctorResponseDTO updateDoctor(UUID id, DoctorRequestDTO request);
     void updateDoctorStatus(UUID id, boolean isActive);
+    DoctorResponseDTO getDoctorByUserId(UUID userId);
     
     ScheduleResponseDTO createSchedule(UUID doctorId, ScheduleRequestDTO request);
+    ScheduleResponseDTO updateSchedule(UUID doctorId, UUID scheduleId, ScheduleRequestDTO request);
     List<ScheduleResponseDTO> getSchedulesByDoctorId(UUID doctorId);
     void deleteSchedule(UUID doctorId, UUID scheduleId);
     SlotResponseDTO getAvailableSlots(UUID doctorId, java.time.LocalDate date);

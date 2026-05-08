@@ -7,14 +7,22 @@ interface StatusBadgeProps {
   status: AppointmentStatus
 }
 
-const statusConfig: Record<AppointmentStatus, { label: string; className: string }> = {
+const statusConfig: Record<string, { label: string; className: string }> = {
+  REQUESTED: {
+    label: 'Requested',
+    className: 'border-yellow-500/30 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400',
+  },
+  CONFIRMED: {
+    label: 'Confirmed',
+    className: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400',
+  },
   BOOKED: {
     label: 'Booked',
     className: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400',
   },
   ARRIVED: {
     label: 'Arrived',
-    className: 'border-yellow-500/30 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400',
+    className: 'border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-400',
   },
   COMPLETED: {
     label: 'Completed',
@@ -31,7 +39,11 @@ const statusConfig: Record<AppointmentStatus, { label: string; className: string
 }
 
 export function StatusBadge({ status }: StatusBadgeProps) {
-  const config = statusConfig[status]
+  const config = statusConfig[status] || {
+    label: status,
+    className: 'border-gray-500/30 bg-gray-500/10 text-gray-700 dark:text-gray-400',
+  }
+
   return (
     <Badge variant="outline" className={config.className}>
       {config.label}

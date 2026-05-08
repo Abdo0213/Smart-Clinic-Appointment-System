@@ -3,6 +3,7 @@ using Auth.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Http.Json;
+using System.Security.Claims;
 
 [ApiController]
 [Route("api/auth")]
@@ -45,13 +46,24 @@ public class AuthController : ControllerBase
                 
                 if (!response.IsSuccessStatusCode)
                 {
-                    // Log error or handle if needed. For now, we still return OK for auth registration
                     Console.WriteLine($"Failed to create patient record: {response.StatusCode}");
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception when calling Patient Service: {ex.Message}");
+            }
+
+            // Auto-login after registration
+            var (authResponse, loginError) = await _authService.LoginAsync(new LoginDto 
+            { 
+                Email = model.Email, 
+                Password = model.Password 
+            });
+
+            if (authResponse != null)
+            {
+                return Ok(authResponse);
             }
 
             return Ok(new { message = "User registered and patient profile created successfully!", userId = userId });
@@ -64,10 +76,57 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto model)
     {
-        var (token, error) = await _authService.LoginAsync(model);
-        if (token != null)
-            return Ok(new { token });
+        var (response, error) = await _authService.LoginAsync(model);
+        if (response != null)
+            return Ok(response);
 
-        return Unauthorized(error);
+        return Unauthorized(new { message = error });
+    }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh([FromBody] AuthResponseDto model)
+    {
+        var (response, error) = await _authService.RefreshTokenAsync(model.Token, model.RefreshToken);
+        if (response != null)
+            return Ok(response);
+
+        return BadRequest(new { message = error });
+    }
+
+    [Authorize]
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+
+        var success = await _authService.LogoutAsync(userId);
+        return success ? NoContent() : BadRequest();
+    }
+
+    [Authorize]
+    [HttpGet("me")]
+    public async Task<IActionResult> GetCurrentUser()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+
+        var profile = await _authService.GetProfileAsync(userId);
+        if (profile == null) return NotFound();
+
+        return Ok(profile);
+    }
+
+    [Authorize]
+    [HttpPut("me")]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto model)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+
+        var (success, error) = await _authService.UpdateProfileAsync(userId, model);
+        if (!success) return BadRequest(new { message = error });
+
+        return Ok(new { message = "Profile updated successfully" });
     }
 }

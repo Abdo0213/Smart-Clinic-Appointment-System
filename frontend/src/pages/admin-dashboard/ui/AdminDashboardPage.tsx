@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '@/shared/api/client'
 import { API_ROUTES } from '@/shared/api/apiRoutes'
@@ -8,6 +9,7 @@ import { AuthGuard } from '@/features/auth/ui/AuthGuard'
 import { formatCurrency } from '@/shared/lib/formatCurrency'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoadingSpinner } from '@/shared/ui/loading-spinner/loading-spinner'
+import { Button } from '@/components/ui/button'
 import {
   CalendarCheckIcon,
   CheckCircleIcon,
@@ -56,69 +58,46 @@ function MetricCard({ title, value, icon, trend }: MetricCardProps) {
   )
 }
 
-interface AppointmentsReport {
-  todayTotal: number
-  todayCompleted: number
-  todayCancelled: number
-  todayNoShow: number
+interface DashboardSummary {
+  appointments: {
+    total: number
+    confirmed: number
+    pending: number
+    cancelled: number
+  }
+  revenue: {
+    totalBilled: number
+    pendingCollected: number
+  }
+  staff: {
+    activeDoctors: number
+    totalDoctors: number
+  }
 }
 
-interface RevenueReport {
-  todayRevenue: number
-  monthRevenue: number
-  pendingCount: number
-}
-
-interface DoctorUtilizationReport {
-  averageUtilization: number
-  noShowRate: number
-}
-
-function useAppointmentsReport() {
+function useDashboardSummary(from?: string, to?: string) {
   return useQuery({
-    queryKey: ['admin', 'reports', 'appointments', 'today'],
+    queryKey: ['admin', 'dashboard', 'summary', from, to],
     queryFn: async () => {
-      const { data } = await apiClient.get<AppointmentsReport>(API_ROUTES.ADMIN.REPORTS_APPOINTMENTS, {
-        params: { from: new Date().toISOString().split('T')[0], to: new Date().toISOString().split('T')[0] },
+      const { data } = await apiClient.get<DashboardSummary>(API_ROUTES.ADMIN.DASHBOARD, {
+        params: { from, to },
       })
       return data
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  })
-}
-
-function useRevenueReport() {
-  return useQuery({
-    queryKey: ['admin', 'reports', 'revenue', 'today'],
-    queryFn: async () => {
-      const { data } = await apiClient.get<RevenueReport>(API_ROUTES.ADMIN.REPORTS_REVENUE, {
-        params: { from: new Date().toISOString().split('T')[0], to: new Date().toISOString().split('T')[0] },
-      })
-      return data
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  })
-}
-
-function useDoctorUtilization() {
-  return useQuery({
-    queryKey: ['admin', 'reports', 'doctors', 'utilization'],
-    queryFn: async () => {
-      const { data } = await apiClient.get<DoctorUtilizationReport>(API_ROUTES.ADMIN.REPORTS_DOCTORS, {
-        params: { from: new Date().toISOString().split('T')[0], to: new Date().toISOString().split('T')[0] },
-      })
-      return data
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   })
 }
 
 export default function AdminDashboardPage() {
-  const { data: appointments, isLoading: appointmentsLoading } = useAppointmentsReport()
-  const { data: revenue, isLoading: revenueLoading } = useRevenueReport()
-  const { data: utilization, isLoading: utilizationLoading } = useDoctorUtilization()
+  const [dateFrom, setDateFrom] = useState<string>(new Date().toISOString().split('T')[0])
+  const [dateTo, setDateTo] = useState<string>(new Date().toISOString().split('T')[0])
 
-  const isLoading = appointmentsLoading || revenueLoading || utilizationLoading
+  const { data: summary, isLoading } = useDashboardSummary(dateFrom || undefined, dateTo || undefined)
+
+  const handleClearRange = () => {
+    setDateFrom('')
+    setDateTo('')
+  }
 
   if (isLoading) {
     return (
@@ -131,43 +110,64 @@ export default function AdminDashboardPage() {
   return (
     <AuthGuard requiredRole="Admin">
       <div className="container mx-auto py-6 space-y-6">
-        <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+          
+          <div className="flex flex-wrap items-center gap-2 bg-muted/50 p-2 rounded-lg border">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-muted-foreground uppercase">From:</span>
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="bg-background border rounded px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-muted-foreground uppercase">To:</span>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="bg-background border rounded px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+            <Button variant="ghost" size="sm" onClick={handleClearRange} className="h-8 text-xs">
+              Get All
+            </Button>
+          </div>
+        </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <MetricCard
-            title="Today's Appointments"
-            value={appointments?.todayTotal ?? 0}
+            title="Total Appointments"
+            value={summary?.appointments.total ?? 0}
             icon={<CalendarCheckIcon className="size-5 text-blue-500" />}
-            trend={{ value: 0, label: 'vs yesterday' }}
           />
           <MetricCard
-            title="Today's Completed"
-            value={appointments?.todayCompleted ?? 0}
+            title="Confirmed Appointments"
+            value={summary?.appointments.confirmed ?? 0}
             icon={<CheckCircleIcon className="size-5 text-green-500" />}
-            trend={{ value: 0, label: 'vs yesterday' }}
           />
           <MetricCard
-            title="Doctor Utilization"
-            value={`${(utilization?.averageUtilization ?? 0).toFixed(1)}%`}
+            title="Active Doctors"
+            value={`${summary?.staff.activeDoctors ?? 0} / ${summary?.staff.totalDoctors ?? 0}`}
             icon={<ActivityIcon className="size-5 text-purple-500" />}
-            trend={{ value: 0, label: 'vs last week' }}
           />
           <MetricCard
-            title="No-Show Rate"
-            value={`${(utilization?.noShowRate ?? 0).toFixed(1)}%`}
-            icon={<UserXIcon className="size-5 text-orange-500" />}
-            trend={{ value: 0, label: 'vs last week' }}
-          />
-          <MetricCard
-            title="Today's Revenue"
-            value={formatCurrency(revenue?.todayRevenue ?? 0)}
+            title="Total Revenue"
+            value={formatCurrency(summary?.revenue.totalBilled ?? 0)}
             icon={<DollarSignIcon className="size-5 text-emerald-500" />}
-            trend={{ value: 0, label: 'vs yesterday' }}
           />
           <MetricCard
-            title="Pending Invoices"
-            value={revenue?.pendingCount ?? 0}
+            title="Pending Revenue"
+            value={formatCurrency(summary?.revenue.pendingCollected ?? 0)}
             icon={<ReceiptIcon className="size-5 text-yellow-500" />}
+          />
+          <MetricCard
+            title="Cancelled"
+            value={summary?.appointments.cancelled ?? 0}
+            icon={<UserXIcon className="size-5 text-red-500" />}
           />
         </div>
       </div>

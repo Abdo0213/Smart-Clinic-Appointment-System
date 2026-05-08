@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useGetAppointments, AppointmentStatusBadge } from "@/entities/appointment"
+import { useGetAppointments, AppointmentStatusBadge, useUpdateAppointmentStatus } from "@/entities/appointment"
 import { useGetPatients, PatientSearchBar } from "@/entities/patient"
 import { useGetInvoices, InvoiceStatusBadge } from "@/entities/invoice"
 import { ROUTE_PATHS } from "@/shared/config/appConfig"
@@ -13,6 +13,13 @@ import { EmptyState } from "@/shared/ui/empty-state/empty-state"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   CalendarIcon,
   UserPlusIcon,
@@ -28,6 +35,7 @@ function getTodayISO() {
 export default function ReceptionDashboardPage() {
   const router = useRouter()
   const [patientFilters, setPatientFilters] = useState<{ name?: string; phone?: string }>({})
+  const updateStatusMutation = useUpdateAppointmentStatus()
 
   const { data: todayAppointmentsData, isLoading: appointmentsLoading } = useGetAppointments({
     date: getTodayISO(),
@@ -119,19 +127,26 @@ export default function ReceptionDashboardPage() {
             ) : (
               <div className="space-y-3">
                 {todayAppointments.map((appt) => (
-                  <div
-                    key={appt.id}
-                    className="flex items-center justify-between rounded-lg border p-3"
-                  >
-                    <div>
-                      <p className="font-medium text-sm">
-                        {appt.patientName ?? appt.patientId}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Dr. {appt.doctorName ?? appt.doctorId} &middot; {appt.slotStart} – {appt.slotEnd}
-                      </p>
+                    <div className="flex items-center gap-2">
+                      <Select
+                        defaultValue={appt.status}
+                        onValueChange={(newStatus) => 
+                          updateStatusMutation.mutate({ id: appt.id, status: newStatus as any })
+                        }
+                        disabled={updateStatusMutation.isPending}
+                      >
+                        <SelectTrigger className="h-8 w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="REQUESTED">Requested</SelectItem>
+                          <SelectItem value="CONFIRMED">Confirmed</SelectItem>
+                          <SelectItem value="ARRIVED">Arrived</SelectItem>
+                          <SelectItem value="COMPLETED">Completed</SelectItem>
+                          <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <AppointmentStatusBadge status={appt.status} />
                   </div>
                 ))}
               </div>

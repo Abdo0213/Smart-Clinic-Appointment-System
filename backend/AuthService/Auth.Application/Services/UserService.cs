@@ -1,5 +1,7 @@
+using Auth.Application.DTOs.Common;
 using Auth.Application.DTOs.Users;
 using Auth.Application.Interfaces;
+using Auth.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,32 +12,58 @@ namespace Auth.Application.Services
         private static readonly HashSet<string> AllowedStaffRoles =
             new(StringComparer.OrdinalIgnoreCase) { "Doctor", "Receptionist" };
 
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
 
-        public UserService(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
+        public UserService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
             _roleManager = roleManager;
         }
 
-        public async Task<IReadOnlyList<UserDto>> GetUsersAsync()
+        public async Task<PaginatedResponse<UserDto>> GetUsersAsync(int page = 0, int size = 10, string? search = null)
         {
-            var users = new List<UserDto>();
+            var query = _userManager.Users.AsNoTracking();
 
-            foreach (var user in _userManager.Users.AsNoTracking().ToList())
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var lowerSearch = search.ToLower();
+                query = query.Where(u => 
+                    (u.Email != null && u.Email.ToLower().Contains(lowerSearch)) ||
+                    (u.FirstName != null && u.FirstName.ToLower().Contains(lowerSearch)) ||
+                    (u.LastName != null && u.LastName.ToLower().Contains(lowerSearch)) ||
+                    (u.UserName != null && u.UserName.ToLower().Contains(lowerSearch)));
+            }
+
+            var totalElements = await query.CountAsync();
+            var dbUsers = await query
+                .Skip(page * size)
+                .Take(size)
+                .ToListAsync();
+
+            var userDtos = new List<UserDto>();
+            foreach (var user in dbUsers)
             {
                 var roles = await _userManager.GetRolesAsync(user);
-                users.Add(new UserDto
+                userDtos.Add(new UserDto
                 {
                     Id = user.Id,
                     Email = user.Email ?? string.Empty,
                     UserName = user.UserName ?? string.Empty,
-                    Role = roles.FirstOrDefault() ?? string.Empty
+                    Role = roles.FirstOrDefault() ?? string.Empty,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName
                 });
             }
 
-            return users.AsReadOnly();
+            return new PaginatedResponse<UserDto>
+            {
+                Content = userDtos,
+                Page = page,
+                Size = size,
+                TotalElements = totalElements,
+                TotalPages = (int)Math.Ceiling(totalElements / (double)size)
+            };
         }
 
         public async Task<UserDto?> GetUserAsync(string id)
@@ -63,7 +91,13 @@ namespace Auth.Application.Services
                 });
             }
 
-            var user = new IdentityUser { UserName = model.Email, Email = model.Email };
+            var user = new ApplicationUser 
+            { 
+                UserName = model.Email, 
+                Email = model.Email,
+                FirstName = model.FirstName,
+                LastName = model.LastName
+            };
             var result = await _userManager.CreateAsync(user, model.Password);
 
             if (!result.Succeeded)
@@ -116,7 +150,7 @@ namespace Auth.Application.Services
             return result.Succeeded;
         }
 
-        private async Task<UserDto> ToDtoAsync(IdentityUser user)
+        private async Task<UserDto> ToDtoAsync(ApplicationUser user)
         {
             var roles = await _userManager.GetRolesAsync(user);
             return new UserDto
@@ -124,8 +158,10 @@ namespace Auth.Application.Services
                 Id = user.Id,
                 Email = user.Email ?? string.Empty,
                 UserName = user.UserName ?? string.Empty,
-                Role = roles.FirstOrDefault() ?? string.Empty
+                Role = roles.FirstOrDefault() ?? string.Empty,
+                FirstName = user.FirstName,
+                LastName = user.LastName
             };
         }
     }
-}
+}
