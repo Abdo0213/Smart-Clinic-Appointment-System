@@ -1,0 +1,58 @@
+export const API_ROUTES = {
+  AUTH: {
+    LOGIN: "/auth/login",
+    REGISTER: "/auth/register",
+    ME: "/auth/me",
+    REFRESH: "/auth/refresh",
+    LOGOUT: "/auth/logout",
+  },
+  USERS: {
+    LIST: "/users",
+    DETAIL: (id: string) => `/users/${id}`,
+    CREATE: "/users",
+  },
+  DOCTORS: {
+    LIST: "/doctors",
+    DETAIL: (id: string) => `/doctors/${id}`,
+    STATUS: (id: string) => `/doctors/${id}/status`,
+    SCHEDULES: (id: string) => `/doctors/${id}/schedules`,
+    SLOTS: (id: string) => `/doctors/${id}/slots`,
+  },
+  PATIENTS: {
+    LIST: "/patients",
+    DETAIL: (id: string) => `/patients/${id}`,
+    CREATE: "/patients",
+  },
+  APPOINTMENTS: {
+    LIST: "/appointments",
+    DETAIL: (id: string) => `/appointments/${id}`,
+    STATUS: (id: string) => `/appointments/${id}/status`,
+    WAITLIST: (id: string) => `/appointments/${id}/waitlist`,
+    RESCHEDULE: (id: string) => `/appointments/${id}/reschedule`,
+  },
+  VISITS: {
+    LIST: "/visits",
+    DETAIL: (id: string) => `/visits/${id}`,
+    SIGN: (id: string) => `/visits/${id}/sign`,
+    PRESCRIPTIONS: (id: string) => `/visits/${id}/prescriptions`,
+    FOLLOW_UP: (id: string) => `/visits/${id}/follow-up`,
+    PRESCRIPTION_PDF: (id: string) => `/visits/${id}/prescriptions/pdf`,
+  },
+  BILLING: {
+    INVOICES: "/billing/invoices",
+    INVOICE_DETAIL: (id: string) => `/billing/invoices/${id}`,
+    PAY: (id: string) => `/billing/invoices/${id}/pay`,
+    WAIVE: (id: string) => `/billing/invoices/${id}/waive`,
+  },
+  ADMIN: {
+    REPORTS_APPOINTMENTS: "/admin/reports/appointments",
+    REPORTS_REVENUE: "/admin/reports/revenue",
+    REPORTS_VISITS: "/admin/reports/visits",
+    REPORTS_DOCTORS: "/admin/reports/doctors",
+    REPORTS_PATIENTS: "/admin/reports/patients",
+    REPORTS_NO_SHOW: "/admin/reports/no-show-rate",
+    REPORTS_EXPORT: "/admin/reports/export",
+    AUDIT_LOG: "/admin/audit-log",
+    DOCTOR_STATUS: (id: string) => `/admin/doctors/${id}/status`,
+  },
+};
