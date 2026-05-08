@@ -12,4 +12,4 @@
 .specify/
 AGENTS.md
 package-lock.json
-tsconfig.tsbuildinfotsconfig.tsbuildinfo
+tsconfig.tsbuildinfo
