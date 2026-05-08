@@ -1,0 +1,15 @@
+.worktrees/
+.env.local
+.agent/
+.refine/
+.idea/
+.claude/
+.vscode/
+.node_modules/
+.kilo*
+.next*
+.opencode/
+.specify/
+AGENTS.md
+package-lock.json
+tsconfig.tsbuildinfotsconfig.tsbuildinfo
