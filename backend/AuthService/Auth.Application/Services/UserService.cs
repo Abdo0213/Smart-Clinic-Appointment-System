@@ -137,6 +137,36 @@ namespace Auth.Application.Services
                 }
             }
 
+            if (model.FirstName is not null)
+            {
+                user.FirstName = model.FirstName;
+            }
+
+            if (model.LastName is not null)
+            {
+                user.LastName = model.LastName;
+            }
+
+            if (model.FirstName is not null || model.LastName is not null)
+            {
+                var updateResult = await _userManager.UpdateAsync(user);
+                if (!updateResult.Succeeded)
+                {
+                    return (null, updateResult.Errors);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(model.Password))
+            {
+                // Simple reset for admin use
+                await _userManager.RemovePasswordAsync(user);
+                var addResult = await _userManager.AddPasswordAsync(user, model.Password);
+                if (!addResult.Succeeded)
+                {
+                    return (null, addResult.Errors);
+                }
+            }
+
             return (await ToDtoAsync(user), Array.Empty<IdentityError>());
         }
 

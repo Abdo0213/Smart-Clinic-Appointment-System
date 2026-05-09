@@ -5,6 +5,7 @@ export const API_ROUTES = {
     ME: "/auth/me",
     REFRESH: "/auth/refresh",
     LOGOUT: "/auth/logout",
+    CHANGE_PASSWORD: "/auth/change-password",
   },
   USERS: {
     LIST: "/admin/users",

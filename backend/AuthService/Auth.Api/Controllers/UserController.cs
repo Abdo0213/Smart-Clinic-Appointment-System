@@ -87,6 +87,73 @@ public class UserController : ControllerBase
         if (user == null)
             return errors.Any() ? BadRequest(errors) : NotFound();
 
+        // Propagation to Doctor/Patient Services
+        if (user.Role.Equals("Doctor", StringComparison.OrdinalIgnoreCase))
+        {
+            try
+            {
+                var doctorServiceUrl = _configuration["Services:DoctorService"] ?? "http://localhost:8082";
+                var client = _httpClientFactory.CreateClient();
+                
+                // 1. Find doctor by userId
+                var getResponse = await client.GetAsync($"{doctorServiceUrl}/doctors/user/{id}");
+                if (getResponse.IsSuccessStatusCode)
+                {
+                    var existingDoctor = await getResponse.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+                    string? doctorId = existingDoctor.GetProperty("id").GetString();
+
+                    if (!string.IsNullOrEmpty(doctorId))
+                    {
+                        // 2. Update doctor record
+                        var doctorUpdateData = new
+                        {
+                            userId = id,
+                            firstName = model.FirstName ?? user.FirstName,
+                            lastName = model.LastName ?? user.LastName,
+                            specialization = model.Specialization ?? (existingDoctor.TryGetProperty("specialization", out var spec) ? spec.GetString() : "General Practice"),
+                            bio = existingDoctor.TryGetProperty("bio", out var bio) ? bio.GetString() : "",
+                            phone = existingDoctor.TryGetProperty("phone", out var ph) ? ph.GetString() : ""
+                        };
+                        await client.PutAsJsonAsync($"{doctorServiceUrl}/doctors/{doctorId}", doctorUpdateData);
+                    }
+                }
+            }
+            catch (Exception ex) { Console.WriteLine($"Error propagating to Doctor Service: {ex.Message}"); }
+        }
+        else if (user.Role.Equals("Patient", StringComparison.OrdinalIgnoreCase))
+        {
+            try
+            {
+                var patientServiceUrl = _configuration["Services:PatientService"] ?? "http://localhost:8083";
+                var client = _httpClientFactory.CreateClient();
+
+                // 1. Find patient by userId
+                var getResponse = await client.GetAsync($"{patientServiceUrl}/patients/user/{id}");
+                if (getResponse.IsSuccessStatusCode)
+                {
+                    var existingPatient = await getResponse.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+                    string? patientId = existingPatient.GetProperty("id").GetString();
+
+                    if (!string.IsNullOrEmpty(patientId))
+                    {
+                        // 2. Update patient record
+                        var patientUpdateData = new
+                        {
+                            userId = id,
+                            firstName = model.FirstName ?? user.FirstName,
+                            lastName = model.LastName ?? user.LastName,
+                            dateOfBirth = existingPatient.TryGetProperty("dateOfBirth", out var dob) ? dob.GetString() : null,
+                            gender = existingPatient.TryGetProperty("gender", out var gen) ? gen.GetString() : null,
+                            phone = existingPatient.TryGetProperty("phone", out var ph) ? ph.GetString() : null,
+                            address = existingPatient.TryGetProperty("address", out var addr) ? addr.GetString() : null
+                        };
+                        await client.PutAsJsonAsync($"{patientServiceUrl}/patients/{patientId}", patientUpdateData);
+                    }
+                }
+            }
+            catch (Exception ex) { Console.WriteLine($"Error propagating to Patient Service: {ex.Message}"); }
+        }
+
         return Ok(user);
     }
 

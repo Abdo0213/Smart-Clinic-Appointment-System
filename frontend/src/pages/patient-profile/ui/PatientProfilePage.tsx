@@ -9,10 +9,11 @@ import { LoadingSpinner } from "@/shared/ui/loading-spinner/loading-spinner"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { PencilIcon, CalendarIcon, ActivityIcon } from "lucide-react"
+import { PencilIcon, CalendarIcon, ActivityIcon, LockIcon } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { UpdatePatientForm } from "@/features/patient/ui/UpdatePatientForm"
+import { ChangePasswordForm } from "@/features/auth/ui/ChangePasswordForm"
 import { DataTable } from "@/shared/ui/data-table/data-table"
 import { EmptyState } from "@/shared/ui/empty-state/empty-state"
 import type { ColumnDef } from "@tanstack/react-table"
@@ -198,7 +199,12 @@ export default function PatientProfilePage() {
             <ActivityIcon className="mr-2 size-4" />
             Visits
           </TabsTrigger>
+          <TabsTrigger value="security">
+            <LockIcon className="mr-2 size-4" />
+            Security
+          </TabsTrigger>
         </TabsList>
+        
         <TabsContent value="appointments" className="mt-6">
           <Card>
             <CardHeader>
@@ -230,6 +236,7 @@ export default function PatientProfilePage() {
             </CardContent>
           </Card>
         </TabsContent>
+        
         <TabsContent value="visits" className="mt-6">
           <Card>
             <CardHeader>
@@ -258,6 +265,20 @@ export default function PatientProfilePage() {
                   }}
                 />
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="security" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Security & Password</CardTitle>
+            </CardHeader>
+            <CardContent className="max-w-md">
+              <p className="text-sm text-muted-foreground mb-4">
+                Update your password to keep your account secure.
+              </p>
+              <ChangePasswordForm />
             </CardContent>
           </Card>
         </TabsContent>

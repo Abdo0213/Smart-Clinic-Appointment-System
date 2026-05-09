@@ -276,6 +276,20 @@ namespace Auth.Application.Services
             return (true, null);
         }
 
+        public async Task<(bool Success, string? Error)> ChangePasswordAsync(string userId, ChangePasswordDto model)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return (false, "User not found");
+
+            var result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+            if (!result.Succeeded)
+            {
+                return (false, string.Join(", ", result.Errors.Select(e => e.Description)));
+            }
+
+            return (true, null);
+        }
+
         private string GenerateToken(ApplicationUser user, IEnumerable<string> userRoles)
         {
             var claims = new List<Claim>

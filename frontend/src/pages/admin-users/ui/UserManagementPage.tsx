@@ -315,6 +315,10 @@ function EditUserForm({
               {errors.specialization && <p className="text-xs text-destructive">{errors.specialization.message}</p>}
             </div>
           )}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="edit-password">New Password (leave empty to keep current)</Label>
+            <Input id="edit-password" type="password" placeholder="••••••••" {...register('password')} />
+          </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel

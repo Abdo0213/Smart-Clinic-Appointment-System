@@ -12,6 +12,7 @@ namespace Auth.Application.Interfaces
         Task<bool> LogoutAsync(string userId);
         Task<object?> GetProfileAsync(string userId);
         Task<(bool Success, string? Error)> UpdateProfileAsync(string userId, UpdateProfileDto model);
+        Task<(bool Success, string? Error)> ChangePasswordAsync(string userId, ChangePasswordDto model);
     }
 
     public class UpdateProfileDto

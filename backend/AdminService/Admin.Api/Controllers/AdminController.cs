@@ -45,9 +45,9 @@ public class AdminController : ControllerBase
     [HttpGet("dashboard")]
     public async Task<IActionResult> GetDashboardSummary([FromQuery] string? from, [FromQuery] string? to)
     {
-        // Default to today if no range provided
-        var dateFrom = from ?? DateTime.UtcNow.ToString("yyyy-MM-dd");
-        var dateTo = to ?? DateTime.UtcNow.ToString("yyyy-MM-dd");
+        // Use provided range or get all if null
+        var dateFrom = from;
+        var dateTo = to;
 
         // 1. Get appointments in range
         var appointmentsResponse = await _appointmentApiClient.GetAppointmentsAsync(dateFrom, dateTo, null);

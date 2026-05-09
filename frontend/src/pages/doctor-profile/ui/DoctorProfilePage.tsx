@@ -8,8 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { PencilIcon, StethoscopeIcon, PhoneIcon, UserIcon, CalendarIcon } from "lucide-react"
+import { PencilIcon, StethoscopeIcon, PhoneIcon, UserIcon, CalendarIcon, LockIcon } from "lucide-react"
 import { DoctorProfileForm } from "./DoctorProfileForm"
+import { ChangePasswordForm } from "@/features/auth/ui/ChangePasswordForm"
 import { formatDate } from "@/shared/lib/formatDate"
 
 interface DoctorProfilePageProps {
@@ -143,6 +144,21 @@ export default function DoctorProfilePage({ doctorId: externalDoctorId }: Doctor
                 Member since {formatDate(doctor.createdAt)}
               </p>
             </div>
+          </CardContent>
+        </Card>
+        {/* Security / Password Change */}
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <LockIcon className="size-5 text-primary" />
+              <CardTitle>Security</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="max-w-md">
+            <p className="text-sm text-muted-foreground mb-4">
+              Keep your account secure by using a strong password.
+            </p>
+            <ChangePasswordForm />
           </CardContent>
         </Card>
       </div>

@@ -129,4 +129,17 @@ public class AuthController : ControllerBase
 
         return Ok(new { message = "Profile updated successfully" });
     }
+
+    [Authorize]
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto model)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+
+        var (success, error) = await _authService.ChangePasswordAsync(userId, model);
+        if (!success) return BadRequest(new { message = error });
+
+        return Ok(new { message = "Password changed successfully" });
+    }
 }
