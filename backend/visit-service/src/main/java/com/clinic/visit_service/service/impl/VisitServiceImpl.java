@@ -47,10 +47,22 @@ public class VisitServiceImpl implements VisitService {
     @Override
     @Transactional
     public VisitResponse createVisit(VisitRequest request) {
-        log.info("Creating visit for appointment: {}", request.getAppointmentId());
+        log.info("Creating or retrieving visit for appointment: {}", request.getAppointmentId());
+
+        // Check if visit already exists for this appointment
+        java.util.Optional<Visit> existingVisit = visitRepository.findByAppointmentId(request.getAppointmentId());
+        if (existingVisit.isPresent()) {
+            log.info("Found existing visit {} for appointment {}", existingVisit.get().getId(), request.getAppointmentId());
+            return visitMapper.toResponse(existingVisit.get());
+        }
 
         // Validate appointment and get details
         AppointmentDTO appointment = fetchAppointmentDetails(request.getAppointmentId());
+
+        // Check status - only allow if REQUESTED
+        if (!"REQUESTED".equalsIgnoreCase(appointment.getStatus())) {
+            throw new ValidationException("Visit can only be created for appointments with REQUESTED status. Current status: " + appointment.getStatus());
+        }
 
         Visit visit = Visit.builder()
                 .appointmentId(appointment.getId())
@@ -77,7 +89,8 @@ public class VisitServiceImpl implements VisitService {
     }
 
     @Override
-    public Page<VisitResponse> getAllVisits(UUID patientId, UUID doctorId, LocalDate dateFrom, LocalDate dateTo, Pageable pageable) {
+    public Page<VisitResponse> getAllVisits(UUID patientId, UUID doctorId, LocalDate dateFrom, LocalDate dateTo,
+            Pageable pageable) {
         Specification<Visit> spec = Specification.where(null);
 
         if (patientId != null) {
@@ -86,7 +99,8 @@ public class VisitServiceImpl implements VisitService {
         if (doctorId != null) {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("doctorId"), doctorId));
         }
-        // Adding date filters would require joining with appointment or having visit date field.
+        // Adding date filters would require joining with appointment or having visit
+        // date field.
         // For simplicity, let's assume we filter by createdAt if no visit date.
 
         return visitRepository.findAll(spec, pageable).map(visitMapper::toResponse);
@@ -122,22 +136,20 @@ public class VisitServiceImpl implements VisitService {
 
         // 2. Prepare Invoice Request for Billing Service
         java.util.List<java.util.Map<String, Object>> lineItems = new java.util.ArrayList<>();
-        
+
         // Add Consultation Fee (from Appointment Price)
         lineItems.add(java.util.Map.of(
-            "description", "Consultation Fee",
-            "quantity", 1,
-            "unitPrice", appointment.getPrice() != null ? appointment.getPrice() : 0.0
-        ));
+                "description", "Consultation Fee",
+                "quantity", 1,
+                "unitPrice", appointment.getPrice() != null ? appointment.getPrice() : 0.0));
 
         // Add additional items from request if any
         if (request != null && request.getAdditionalItems() != null) {
             for (LineItemRequest item : request.getAdditionalItems()) {
                 lineItems.add(java.util.Map.of(
-                    "description", item.getDescription(),
-                    "quantity", item.getQuantity(),
-                    "unitPrice", item.getUnitPrice()
-                ));
+                        "description", item.getDescription(),
+                        "quantity", item.getQuantity(),
+                        "unitPrice", item.getUnitPrice()));
             }
         }
 
@@ -153,7 +165,8 @@ public class VisitServiceImpl implements VisitService {
             restTemplate.postForEntity(billingServiceUrl, invoiceRequest, Object.class);
         } catch (Exception e) {
             log.error("Failed to create invoice: {}", e.getMessage());
-            // Depending on business rules, you might want to fail the sign action or continue.
+            // Depending on business rules, you might want to fail the sign action or
+            // continue.
             // For now, let's assume invoice creation is required.
             throw new RuntimeException("Billing Service error: " + e.getMessage());
         }
@@ -216,7 +229,7 @@ public class VisitServiceImpl implements VisitService {
         Prescription savedPrescription = prescriptionRepository.save(prescription);
         PrescriptionResponse response = prescriptionMapper.toResponse(savedPrescription);
         response.setPdfDownloadUrl("https://dummy-s3-url.com/" + prescription.getPdfKey());
-        
+
         return response;
     }
 
@@ -227,12 +240,13 @@ public class VisitServiceImpl implements VisitService {
                 .orElseThrow(() -> new ResourceNotFoundException("Visit not found"));
 
         // Call Appointment Service to create follow-up
-        // Request body for Appointment Service would typically include patientId, doctorId, slot info
+        // Request body for Appointment Service would typically include patientId,
+        // doctorId, slot info
         log.info("Scheduling follow-up for patient {} with doctor {}", visit.getPatientId(), visit.getDoctorId());
-        
+
         // This is a placeholder for the actual rest call
         // In a real scenario, you'd POST to /appointments
-        
+
         return FollowUpResponse.builder()
                 .followUpId(UUID.randomUUID())
                 .appointmentId(UUID.randomUUID())
@@ -249,16 +263,21 @@ public class VisitServiceImpl implements VisitService {
                 .collect(java.util.stream.Collectors.toList());
     }
 
+    public VisitResponse getVisitByAppointmentId(UUID appointmentId) {
+        Visit visit = visitRepository.findByAppointmentId(appointmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Visit not found for appointment " + appointmentId));
+        return visitMapper.toResponse(visit);
+    }
+
     @Override
     public java.util.List<LineItemRequest> getBillingOptions() {
         return java.util.List.of(
-            new LineItemRequest("X-Ray - Chest", 1, java.math.BigDecimal.valueOf(50.0)),
-            new LineItemRequest("Blood Test - CBC", 1, java.math.BigDecimal.valueOf(25.0)),
-            new LineItemRequest("Injection - Intramuscular", 1, java.math.BigDecimal.valueOf(15.0)),
-            new LineItemRequest("Wound Dressing", 1, java.math.BigDecimal.valueOf(20.0)),
-            new LineItemRequest("Nebulization", 1, java.math.BigDecimal.valueOf(30.0)),
-            new LineItemRequest("ECG", 1, java.math.BigDecimal.valueOf(40.0))
-        );
+                new LineItemRequest("X-Ray - Chest", 1, java.math.BigDecimal.valueOf(50.0)),
+                new LineItemRequest("Blood Test - CBC", 1, java.math.BigDecimal.valueOf(25.0)),
+                new LineItemRequest("Injection - Intramuscular", 1, java.math.BigDecimal.valueOf(15.0)),
+                new LineItemRequest("Wound Dressing", 1, java.math.BigDecimal.valueOf(20.0)),
+                new LineItemRequest("Nebulization", 1, java.math.BigDecimal.valueOf(30.0)),
+                new LineItemRequest("ECG", 1, java.math.BigDecimal.valueOf(40.0)));
     }
 
     private AppointmentDTO fetchAppointmentDetails(UUID appointmentId) {
@@ -297,7 +316,8 @@ public class VisitServiceImpl implements VisitService {
 
         // Dummy pre-signed URL generation
         return PrescriptionPdfResponse.builder()
-                .downloadUrl("https://dummy-s3-pre-signed-url.com/" + prescription.getPdfKey() + "?token=" + UUID.randomUUID())
+                .downloadUrl("https://dummy-s3-pre-signed-url.com/" + prescription.getPdfKey() + "?token="
+                        + UUID.randomUUID())
                 .expiresAt(LocalDateTime.now().plusHours(1))
                 .build();
     }

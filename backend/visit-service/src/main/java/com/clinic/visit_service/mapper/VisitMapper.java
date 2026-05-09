@@ -5,7 +5,7 @@ import com.clinic.visit_service.entity.Visit;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {PrescriptionMapper.class})
 public interface VisitMapper {
     VisitResponse toResponse(Visit visit);
     void updateEntity(com.clinic.visit_service.dto.VisitRequest request, @MappingTarget Visit visit);

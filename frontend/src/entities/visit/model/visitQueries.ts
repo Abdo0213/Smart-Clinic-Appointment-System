@@ -34,6 +34,19 @@ export function useCreateVisit() {
   })
 }
 
+export function useUpdateVisit() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: CreateVisitRequest }) =>
+      visitApi.update(id, data),
+    onSuccess: (visit) => {
+      queryClient.invalidateQueries({ queryKey: ['visits'] })
+      queryClient.invalidateQueries({ queryKey: ['visits', visit.id] })
+      queryClient.invalidateQueries({ queryKey: ['visits', 'appointment', visit.appointmentId] })
+    },
+  })
+}
+
 export function useSignVisit() {
   const queryClient = useQueryClient()
   return useMutation({
@@ -87,5 +100,14 @@ export function useScheduleFollowUp() {
   return useMutation({
     mutationFn: ({ visitId, data }: { visitId: string; data: ScheduleFollowUpRequest }) =>
       visitApi.scheduleFollowUp(visitId, data),
+  })
+}
+
+export function useGetVisitByAppointment(appointmentId: string) {
+  return useQuery({
+    queryKey: ['visits', 'appointment', appointmentId],
+    queryFn: () => visitApi.getByAppointmentId(appointmentId),
+    enabled: !!appointmentId,
+    retry: false,
   })
 }

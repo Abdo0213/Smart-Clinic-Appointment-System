@@ -16,9 +16,11 @@ export {
   useGetVisits,
   useGetVisit,
   useCreateVisit,
+  useUpdateVisit,
   useSignVisit,
   useIssuePrescription,
   useScheduleFollowUp,
+  useGetVisitByAppointment,
 } from './model/visitQueries'
 
 // API

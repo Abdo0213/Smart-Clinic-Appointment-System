@@ -29,6 +29,11 @@ export const visitApi = {
     return data
   },
 
+  async update(id: string, payload: CreateVisitRequest): Promise<Visit> {
+    const { data } = await apiClient.put<Visit>(API_ROUTES.VISITS.DETAIL(id), payload)
+    return data
+  },
+
   async sign(id: string, payload: SignVisitRequest): Promise<Visit> {
     const { data } = await apiClient.post<Visit>(API_ROUTES.VISITS.SIGN(id), payload)
     return data
@@ -49,6 +54,11 @@ export const visitApi = {
 
   async getPrescriptionPdfUrl(visitId: string): Promise<{ url: string }> {
     const { data } = await apiClient.get<{ url: string }>(API_ROUTES.VISITS.PRESCRIPTION_PDF(visitId))
+    return data
+  },
+
+  async getByAppointmentId(appointmentId: string): Promise<Visit> {
+    const { data } = await apiClient.get<Visit>(API_ROUTES.VISITS.BY_APPOINTMENT(appointmentId))
     return data
   },
 }

@@ -9,4 +9,5 @@ import java.util.UUID;
 
 @Repository
 public interface VisitRepository extends JpaRepository<Visit, UUID>, JpaSpecificationExecutor<Visit> {
+    java.util.Optional<Visit> findByAppointmentId(UUID appointmentId);
 }

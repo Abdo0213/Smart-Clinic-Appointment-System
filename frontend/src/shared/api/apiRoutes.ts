@@ -44,6 +44,7 @@ export const API_ROUTES = {
     PRESCRIPTIONS: (id: string) => `/visits/${id}/prescriptions`,
     FOLLOW_UP: (id: string) => `/visits/${id}/follow-up`,
     PRESCRIPTION_PDF: (id: string, prescriptionId: string) => `/visits/${id}/prescriptions/${prescriptionId}/pdf`,
+    BY_APPOINTMENT: (appointmentId: string) => `/visits/appointment/${appointmentId}`,
   },
   BILLING: {
     INVOICES: "/billing/invoices",

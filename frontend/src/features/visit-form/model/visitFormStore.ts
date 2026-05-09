@@ -32,6 +32,7 @@ interface VisitFormState {
   removeAdditionalItem: (index: number) => void
   updateAdditionalItem: (index: number, field: keyof LineItemDraft, value: string | number) => void
   reset: () => void
+  loadVisit: (visit: any) => void
 }
 
 const initialState = {
@@ -68,4 +69,11 @@ export const useVisitFormStore = create<VisitFormState>((set) => ({
       ),
     })),
   reset: () => set(initialState),
+  loadVisit: (visit) => set({
+    chiefComplaint: visit.chiefComplaint || '',
+    examinationFindings: visit.examinationFindings || '',
+    assessment: visit.assessment || '',
+    plan: visit.plan || '',
+    icd10Codes: visit.icd10Codes || '',
+  }),
 }))

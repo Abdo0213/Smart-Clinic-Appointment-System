@@ -13,9 +13,10 @@ interface VisitFormProps {
   appointmentId: string
   onSubmit: (data: CreateVisitFormData) => void
   isSubmitting?: boolean
+  disabled?: boolean
 }
 
-export function VisitForm({ appointmentId, onSubmit, isSubmitting }: VisitFormProps) {
+export function VisitForm({ appointmentId, onSubmit, isSubmitting, disabled }: VisitFormProps) {
   const { chiefComplaint, examinationFindings, assessment, plan, icd10Codes, setField } = useVisitFormStore()
 
   const {
@@ -31,7 +32,7 @@ export function VisitForm({ appointmentId, onSubmit, isSubmitting }: VisitFormPr
       examinationFindings,
       assessment,
       plan,
-      icd10Codes: icd10Codes ? icd10Codes.split(',').map((s) => s.trim()).filter(Boolean) : [],
+      icd10Codes,
     },
   })
 
@@ -41,9 +42,8 @@ export function VisitForm({ appointmentId, onSubmit, isSubmitting }: VisitFormPr
   }
 
   const handleIcdBlur = () => {
-    const raw = useVisitFormStore.getState().icd10Codes
-    const codes = raw.split(',').map((s) => s.trim()).filter(Boolean)
-    setValue('icd10Codes', codes, { shouldValidate: true })
+    const value = useVisitFormStore.getState().icd10Codes
+    setValue('icd10Codes', value, { shouldValidate: true })
   }
 
   return (
@@ -56,6 +56,7 @@ export function VisitForm({ appointmentId, onSubmit, isSubmitting }: VisitFormPr
           <Textarea
             id="chiefComplaint"
             placeholder="Describe the chief complaint..."
+            disabled={disabled}
             {...register('chiefComplaint', {
               onBlur: () => handleBlur('chiefComplaint'),
               onChange: (e) => setField('chiefComplaint', e.target.value),
@@ -73,6 +74,7 @@ export function VisitForm({ appointmentId, onSubmit, isSubmitting }: VisitFormPr
           <Textarea
             id="examinationFindings"
             placeholder="Document examination findings..."
+            disabled={disabled}
             {...register('examinationFindings', {
               onBlur: () => handleBlur('examinationFindings'),
               onChange: (e) => setField('examinationFindings', e.target.value),
@@ -90,6 +92,7 @@ export function VisitForm({ appointmentId, onSubmit, isSubmitting }: VisitFormPr
           <Textarea
             id="assessment"
             placeholder="Clinical assessment..."
+            disabled={disabled}
             {...register('assessment', {
               onBlur: () => handleBlur('assessment'),
               onChange: (e) => setField('assessment', e.target.value),
@@ -107,6 +110,7 @@ export function VisitForm({ appointmentId, onSubmit, isSubmitting }: VisitFormPr
           <Textarea
             id="plan"
             placeholder="Treatment plan..."
+            disabled={disabled}
             {...register('plan', {
               onBlur: () => handleBlur('plan'),
               onChange: (e) => setField('plan', e.target.value),
@@ -124,6 +128,7 @@ export function VisitForm({ appointmentId, onSubmit, isSubmitting }: VisitFormPr
           <Input
             id="icd10Codes"
             placeholder="e.g. J06.9, M54.5"
+            disabled={disabled}
             onChange={(e) => setField('icd10Codes', e.target.value)}
             onBlur={handleIcdBlur}
             defaultValue={icd10Codes}

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { useCreateVisit, useSignVisit, useIssuePrescription, useScheduleFollowUp } from '@/entities/visit'
+import { useCreateVisit, useUpdateVisit, useSignVisit, useIssuePrescription, useScheduleFollowUp, useGetVisitByAppointment } from '@/entities/visit'
 import { useGetAppointment } from '@/entities/appointment'
 import { VisitForm, PrescriptionForm, SignVisitDialog, FollowUpScheduler } from '@/features/visit-form'
 import { useVisitFormStore } from '@/features/visit-form/model/visitFormStore'
@@ -12,7 +12,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { PillIcon, FileCheckIcon, CalendarPlusIcon, SaveIcon, Trash2Icon } from 'lucide-react'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { PillIcon, FileCheckIcon, CalendarPlusIcon, SaveIcon, Trash2Icon, AlertCircleIcon } from 'lucide-react'
+import { useEffect } from 'react'
 import type { CreateVisitFormData, PrescriptionFormData } from '@/features/visit-form'
 
 export default function VisitPage() {
@@ -20,7 +22,10 @@ export default function VisitPage() {
   const appointmentId = (params.appointmentId ?? params.id) as string
 
   const { data: appointment, isLoading: appointmentLoading } = useGetAppointment(appointmentId)
+  const { data: existingVisit, isLoading: visitLoading } = useGetVisitByAppointment(appointmentId)
+  
   const createVisitMutation = useCreateVisit()
+  const updateVisitMutation = useUpdateVisit()
   const signVisitMutation = useSignVisit()
   const issuePrescriptionMutation = useIssuePrescription()
   const scheduleFollowUpMutation = useScheduleFollowUp()
@@ -32,18 +37,39 @@ export default function VisitPage() {
 
   const prescriptions = useVisitFormStore((s) => s.prescriptions)
   const removePrescription = useVisitFormStore((s) => s.removePrescription)
+  const loadVisit = useVisitFormStore((s) => s.loadVisit)
+
+  useEffect(() => {
+    if (existingVisit) {
+      setCreatedVisitId(existingVisit.id)
+      loadVisit(existingVisit)
+    }
+  }, [existingVisit, loadVisit])
 
   const handleSaveVisit = (data: CreateVisitFormData) => {
-    createVisitMutation.mutate(data, {
-      onSuccess: (visit) => {
-        setCreatedVisitId(visit.id)
-        toast.success('Visit record created successfully')
-      },
-      onError: (error) => {
-        const message = error instanceof Error ? error.message : 'Failed to create visit'
-        toast.error(message)
-      },
-    })
+    if (createdVisitId) {
+      updateVisitMutation.mutate(
+        { id: createdVisitId, data },
+        {
+          onSuccess: () => toast.success('Visit record updated successfully'),
+          onError: (error) => {
+            const message = error instanceof Error ? error.message : 'Failed to update visit'
+            toast.error(message)
+          },
+        }
+      )
+    } else {
+      createVisitMutation.mutate(data, {
+        onSuccess: (visit) => {
+          setCreatedVisitId(visit.id)
+          toast.success('Visit record created successfully')
+        },
+        onError: (error) => {
+          const message = error instanceof Error ? error.message : 'Failed to create visit'
+          toast.error(message)
+        },
+      })
+    }
   }
 
   const handleIssuePrescription = (data: PrescriptionFormData) => {
@@ -79,7 +105,7 @@ export default function VisitPage() {
 
   const handleScheduleFollowUp = () => {}
 
-  if (appointmentLoading) {
+  if (appointmentLoading || visitLoading) {
     return (
       <div className="flex items-center justify-center py-20">
         <LoadingSpinner size="lg" />
@@ -88,6 +114,9 @@ export default function VisitPage() {
   }
 
   const isVisitCreated = !!createdVisitId
+  const isSigned = existingVisit?.isSigned || signVisitMutation.isSuccess
+  const canStartVisit = appointment?.status === 'REQUESTED'
+  const isReadOnly = isSigned || !canStartVisit
 
   return (
     <div className="container mx-auto max-w-4xl py-6 space-y-6">
@@ -107,16 +136,31 @@ export default function VisitPage() {
         )}
       </div>
 
-      <VisitForm appointmentId={appointmentId} onSubmit={handleSaveVisit} isSubmitting={createVisitMutation.isPending} />
+      {!canStartVisit && (
+        <Alert variant="destructive">
+          <AlertCircleIcon className="size-4" />
+          <AlertTitle>Cannot start visit</AlertTitle>
+          <AlertDescription>
+            This appointment status is {appointment?.status}. Visits can only be started for appointments in 'REQUESTED' status.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <VisitForm 
+        appointmentId={appointmentId} 
+        onSubmit={handleSaveVisit} 
+        isSubmitting={createVisitMutation.isPending || updateVisitMutation.isPending}
+        disabled={isReadOnly}
+      />
 
       <div className="flex gap-3">
         <Button
           type="submit"
           form="visit-form"
-          disabled={createVisitMutation.isPending || isVisitCreated}
+          disabled={createVisitMutation.isPending || updateVisitMutation.isPending || isReadOnly}
         >
           <SaveIcon className="mr-2 size-4" />
-          Save Visit
+          {isVisitCreated ? 'Update Visit' : 'Save Visit'}
         </Button>
         <Button
           type="button"

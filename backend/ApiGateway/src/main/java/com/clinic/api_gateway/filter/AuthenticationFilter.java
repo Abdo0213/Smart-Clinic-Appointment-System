@@ -48,7 +48,8 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                     if (config.getRoles() != null && !config.getRoles().isEmpty()) {
                         List<String> userRoles = jwtUtil.getRoles(authHeader);
                         boolean hasRole = config.getRoles().stream()
-                                .anyMatch(role -> userRoles.contains(role) || userRoles.contains("Admin")); // Admin can access everything
+                                .anyMatch(role -> userRoles.stream().anyMatch(userRole -> userRole.equalsIgnoreCase(role)) || 
+                                                 userRoles.stream().anyMatch(userRole -> userRole.equalsIgnoreCase("Admin")));
                         if (!hasRole) {
                             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied: Insufficient permissions");
                         }

@@ -37,15 +37,15 @@ export function VisitDetail({ visit }: VisitDetailProps) {
             <span className="font-medium">Plan</span>
             <p className="text-muted-foreground">{visit.plan}</p>
           </div>
-          {visit.icd10Codes.length > 0 && (
+          {visit.icd10Codes && (
             <div>
               <span className="font-medium">ICD-10 Codes</span>
-              <p className="text-muted-foreground">{visit.icd10Codes.join(', ')}</p>
+              <p className="text-muted-foreground">{visit.icd10Codes}</p>
             </div>
           )}
         </div>
 
-        {visit.prescriptions.length > 0 && (
+        {visit.prescriptions && visit.prescriptions.length > 0 && (
           <>
             <Separator />
             <div>

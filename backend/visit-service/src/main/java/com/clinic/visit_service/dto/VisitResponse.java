@@ -28,4 +28,5 @@ public class VisitResponse {
     private UUID parentRecordId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private java.util.List<PrescriptionResponse> prescriptions;
 }

@@ -24,12 +24,12 @@ export function VisitCard({ visit, onClick }: VisitCardProps) {
             <p className="text-sm font-medium">{visit.chiefComplaint}</p>
             <p className="text-xs text-muted-foreground">
               {formatDate(visit.createdAt)}
-              {visit.icd10Codes.length > 0 && ` · ${visit.icd10Codes.join(', ')}`}
+              {visit.icd10Codes && ` · ${visit.icd10Codes}`}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {visit.prescriptions.length > 0 && (
+          {visit.prescriptions && visit.prescriptions.length > 0 && (
             <span className="flex items-center gap-1 text-xs text-muted-foreground">
               <PillIcon className="size-3" />
               {visit.prescriptions.length}

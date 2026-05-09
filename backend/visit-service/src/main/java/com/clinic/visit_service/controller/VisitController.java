@@ -93,4 +93,9 @@ public class VisitController {
             @PathVariable UUID prescriptionId) {
         return ResponseEntity.ok(visitService.getPrescriptionPdfUrl(id, prescriptionId));
     }
+
+    @GetMapping("/appointment/{appointmentId}")
+    public ResponseEntity<VisitResponse> getVisitByAppointmentId(@PathVariable UUID appointmentId) {
+        return ResponseEntity.ok(visitService.getVisitByAppointmentId(appointmentId));
+    }
 }

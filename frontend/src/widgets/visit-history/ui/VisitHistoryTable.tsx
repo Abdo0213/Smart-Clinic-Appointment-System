@@ -53,16 +53,13 @@ export function VisitHistoryTable({ patientId, doctorId }: VisitHistoryTableProp
     {
       accessorKey: 'icd10Codes',
       header: 'ICD-10',
-      cell: ({ row }) =>
-        row.original.icd10Codes.length > 0
-          ? row.original.icd10Codes.join(', ')
-          : '—',
+      cell: ({ row }) => row.original.icd10Codes || '—',
     },
     {
       accessorKey: 'prescriptions',
       header: 'Rx',
       cell: ({ row }) =>
-        row.original.prescriptions.length > 0 ? (
+        row.original.prescriptions && row.original.prescriptions.length > 0 ? (
           <span className="flex items-center gap-1">
             <PillIcon className="size-3" />
             {row.original.prescriptions.length}

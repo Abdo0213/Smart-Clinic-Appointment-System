@@ -12,7 +12,7 @@ export const createVisitSchema = z.object({
   examinationFindings: z.string().min(1, 'Examination findings are required'),
   assessment: z.string().min(1, 'Assessment is required'),
   plan: z.string().min(1, 'Plan is required'),
-  icd10Codes: z.array(z.string()).min(1, 'At least one ICD-10 code is required'),
+  icd10Codes: z.string(),
 })
 
 export const prescriptionSchema = z.object({

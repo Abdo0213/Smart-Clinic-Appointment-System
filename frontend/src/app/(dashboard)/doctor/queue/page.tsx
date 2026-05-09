@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { useAuthStore } from '@/features/auth'
 import { useDoctorQueue, AppointmentStatusBadge } from '@/entities/appointment'
@@ -13,6 +14,7 @@ import { EmptyState } from '@/shared/ui/empty-state/empty-state'
 import { CalendarIcon, ClockIcon, StethoscopeIcon } from 'lucide-react'
 
 export default function DailyQueuePage() {
+  const router = useRouter()
   const user = useAuthStore((s) => s.user)
   const [date, setDate] = useState(() => format(new Date(), 'yyyy-MM-dd'))
   const isToday = date === format(new Date(), 'yyyy-MM-dd')
@@ -105,7 +107,7 @@ export default function DailyQueuePage() {
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      onClick={() => window.location.href = `/doctor/visits/new/${apt.id}`}
+                      onClick={() => router.push(`/doctor/visits/new/${apt.id}`)}
                     >
                       <StethoscopeIcon className="mr-2 size-4" />
                       {apt.status === 'COMPLETED' ? 'View Visit' : 'Start Visit'}

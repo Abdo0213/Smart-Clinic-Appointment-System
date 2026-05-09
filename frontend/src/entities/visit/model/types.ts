@@ -34,7 +34,7 @@ export interface CreateVisitRequest {
   examinationFindings: string
   assessment: string
   plan: string
-  icd10Codes: string[]
+  icd10Codes: string
 }
 
 export interface Visit {
@@ -46,7 +46,7 @@ export interface Visit {
   examinationFindings: string
   assessment: string
   plan: string
-  icd10Codes: string[]
+  icd10Codes: string
   isSigned: boolean
   signedAt: string | null
   prescriptions: Prescription[]
