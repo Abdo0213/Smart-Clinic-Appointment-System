@@ -24,9 +24,11 @@ export interface CreateScheduleRequest {
 }
 
 export interface ScheduleSlot {
-  startTime: string
-  endTime: string
-  isAvailable: boolean
+  start: string
+  end: string
+  available: boolean
+  price?: number
+  reason?: string
 }
 
 export interface SlotAvailability {

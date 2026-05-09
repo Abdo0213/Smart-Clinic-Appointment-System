@@ -65,7 +65,7 @@ spring:
             - RewritePath=/api/(?<segment>.*), /$\{segment}
             - name: AuthenticationFilter
               args:
-                roles: Admin, Doctor, Receptionist
+                roles: Admin, Doctor, Receptionist, Patient
 
         - id: appointment-service
           uri: http://localhost:8084
@@ -85,7 +85,7 @@ spring:
             - RewritePath=/api/(?<segment>.*), /$\{segment}
             - name: AuthenticationFilter
               args:
-                roles: Admin, Doctor
+                roles: Admin, Doctor, Patient
 
         - id: billing-service
           uri: http://localhost:8087
@@ -95,7 +95,7 @@ spring:
             - RewritePath=/api/(?<segment>.*), /$\{segment}
             - name: AuthenticationFilter
               args:
-                roles: Admin, Receptionist
+                roles: Admin, Receptionist, Patient
 
 jwt:
   secret: YourSuperSecretKeyHere12345-MustBeLongerThan32Chars

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useAuthStore } from '@/features/auth'
+import { useGetMe } from '@/entities/patient'
 import { useGetAppointments, useCancelAppointment, AppointmentCard, AppointmentStatusBadge, AppointmentFilters as AppointmentFiltersUI } from '@/entities/appointment'
 import { useGetDoctors } from '@/entities/doctor'
 import { cancelAppointmentSchema } from '@/features/appointment-booking'
@@ -24,8 +25,11 @@ export default function PatientAppointmentsPage() {
   const cancelMutation = useCancelAppointment()
   const { data: doctorsData } = useGetDoctors({})
 
+  const { data: patient } = useGetMe()
+  const patientId = patient?.id ?? ""
+
   const { data, isLoading } = useGetAppointments({
-    patientId: user?.patientId ?? '',
+    patientId,
     ...filters,
     size: 20,
   })

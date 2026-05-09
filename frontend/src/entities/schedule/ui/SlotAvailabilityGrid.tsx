@@ -18,9 +18,9 @@ export function SlotAvailabilityGrid({ slotAvailability, onSelectSlot }: SlotAva
   }
 
   return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
       {slotAvailability.slots.map((slot) => (
-        <SlotCard key={`${slot.startTime}-${slot.endTime}`} slot={slot} onSelect={onSelectSlot} />
+        <SlotCard key={`${slot.start}-${slot.end}`} slot={slot} onSelect={onSelectSlot} />
       ))}
     </div>
   )

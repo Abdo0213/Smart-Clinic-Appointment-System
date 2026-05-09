@@ -38,8 +38,8 @@ export function DoctorSlotPicker() {
   }
 
   const handleSlotSelect = (slot: ScheduleSlot) => {
-    if (slot.isAvailable) {
-      selectSlot({ slotStart: slot.startTime, slotEnd: slot.endTime })
+    if (slot.available) {
+      selectSlot({ slotStart: slot.start, slotEnd: slot.end })
     }
   }
 
