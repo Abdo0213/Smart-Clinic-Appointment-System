@@ -21,6 +21,7 @@ export interface UpdateDoctorRequest {
   specialization?: string
   bio?: string
   phone?: string
+  email?: string
 }
 
 export interface DoctorListResponse {

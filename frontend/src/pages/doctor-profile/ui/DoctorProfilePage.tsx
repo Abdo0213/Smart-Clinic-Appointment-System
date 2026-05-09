@@ -73,6 +73,7 @@ export default function DoctorProfilePage({ doctorId: externalDoctorId }: Doctor
               </DialogHeader>
               <DoctorProfileForm
                 doctor={doctor}
+                email={user?.email}
                 onSuccess={() => setIsEditOpen(false)}
                 onCancel={() => setIsEditOpen(false)}
               />

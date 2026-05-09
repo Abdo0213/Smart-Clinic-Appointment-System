@@ -127,7 +127,8 @@ public class AuthController : ControllerBase
         var (success, error) = await _authService.UpdateProfileAsync(userId, model);
         if (!success) return BadRequest(new { message = error });
 
-        return Ok(new { message = "Profile updated successfully" });
+        var profile = await _authService.GetProfileAsync(userId);
+        return Ok(profile);
     }
 
     [Authorize]

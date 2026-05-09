@@ -4,6 +4,7 @@ export type BloodType = 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-'
 
 export interface Patient {
   id: string
+  userId: string
   firstName: string
   lastName: string
   dateOfBirth: string
@@ -35,8 +36,10 @@ export interface CreatePatientRequest {
 }
 
 export interface UpdatePatientRequest {
+  userId?: string
   firstName?: string
   lastName?: string
+  email?: string
   dateOfBirth?: string
   gender?: Gender
   phone?: string

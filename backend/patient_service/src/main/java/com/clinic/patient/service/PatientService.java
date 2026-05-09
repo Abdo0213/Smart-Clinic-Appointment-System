@@ -83,6 +83,7 @@ public class PatientService {
     private PatientResponse mapToResponse(Patient p) {
         return PatientResponse.builder()
             .id(p.getId())
+            .userId(p.getUserId())
             .firstName(p.getFirstName())
             .lastName(p.getLastName())
             .dateOfBirth(p.getDateOfBirth())

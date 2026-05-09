@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { UpdatePatientForm } from "@/features/patient/ui/UpdatePatientForm"
 import { ChangePasswordForm } from "@/features/auth/ui/ChangePasswordForm"
+import { useAuthStore } from "@/features/auth"
 import { DataTable } from "@/shared/ui/data-table/data-table"
 import { EmptyState } from "@/shared/ui/empty-state/empty-state"
 import type { ColumnDef } from "@tanstack/react-table"
@@ -24,6 +25,7 @@ import { formatDate, formatDateTime } from "@/shared/lib/formatDate"
 export default function PatientProfilePage() {
   const params = useParams<{ id?: string }>()
   const patientId = params.id as string
+  const user = useAuthStore((s) => s.user)
   const [isUpdateOpen, setIsUpdateOpen] = useState(false)
 
   const { data: patient, isLoading, isError } = useGetPatient(patientId)
@@ -114,7 +116,11 @@ export default function PatientProfilePage() {
             <DialogHeader>
               <DialogTitle>Update Patient Profile</DialogTitle>
             </DialogHeader>
-            <UpdatePatientForm patientId={patientId} onSuccess={() => setIsUpdateOpen(false)} />
+            <UpdatePatientForm 
+              patientId={patientId} 
+              email={user?.id === patient.userId ? user.email : undefined} 
+              onSuccess={() => setIsUpdateOpen(false)} 
+            />
           </DialogContent>
         </Dialog>
       </div>

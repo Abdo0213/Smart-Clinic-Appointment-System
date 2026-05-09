@@ -124,15 +124,25 @@ namespace Auth.Application.Services
 
             if (model.Email is not null)
             {
+                Console.WriteLine($"Admin updating user email: {id} to {model.Email}");
+
+                // Update object in memory first so subsequent UpdateAsync doesn't overwrite it
+                user.Email = model.Email;
+                user.UserName = model.Email;
+                user.NormalizedEmail = model.Email.ToUpper();
+                user.NormalizedUserName = model.Email.ToUpper();
+
                 var emailResult = await _userManager.SetEmailAsync(user, model.Email);
                 if (!emailResult.Succeeded)
                 {
+                    Console.WriteLine($"Failed to set email: {string.Join(", ", emailResult.Errors.Select(e => e.Description))}");
                     return (null, emailResult.Errors);
                 }
 
                 var userNameResult = await _userManager.SetUserNameAsync(user, model.Email);
                 if (!userNameResult.Succeeded)
                 {
+                    Console.WriteLine($"Failed to set username: {string.Join(", ", userNameResult.Errors.Select(e => e.Description))}");
                     return (null, userNameResult.Errors);
                 }
             }

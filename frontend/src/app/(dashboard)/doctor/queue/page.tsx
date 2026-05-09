@@ -6,10 +6,11 @@ import { useAuthStore } from '@/features/auth'
 import { useDoctorQueue, AppointmentStatusBadge } from '@/entities/appointment'
 import { StatusUpdateDropdown } from '@/features/appointment-status-update'
 import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { LoadingSpinner } from '@/shared/ui/loading-spinner/loading-spinner'
 import { EmptyState } from '@/shared/ui/empty-state/empty-state'
-import { CalendarIcon, ClockIcon } from 'lucide-react'
+import { CalendarIcon, ClockIcon, StethoscopeIcon } from 'lucide-react'
 
 export default function DailyQueuePage() {
   const user = useAuthStore((s) => s.user)
@@ -100,6 +101,16 @@ export default function DailyQueuePage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <AppointmentStatusBadge status={apt.status} />
+                  {(apt.status === 'REQUESTED' || apt.status === 'CONFIRMED' || apt.status === 'COMPLETED') && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => window.location.href = `/doctor/visits/new/${apt.id}`}
+                    >
+                      <StethoscopeIcon className="mr-2 size-4" />
+                      {apt.status === 'COMPLETED' ? 'View Visit' : 'Start Visit'}
+                    </Button>
+                  )}
                   <StatusUpdateDropdown
                     appointmentId={apt.id}
                     currentStatus={apt.status}

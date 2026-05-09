@@ -1,5 +1,5 @@
 export type { Patient, CreatePatientRequest, UpdatePatientRequest, PatientFilters, BloodType } from './model/types'
-export { useGetPatients, useGetPatient, useCreatePatient, useUpdatePatient } from './model/patientQueries'
+export { useGetPatients, useGetPatient, useGetMe, useCreatePatient, useUpdatePatient } from './model/patientQueries'
 export { patientApi } from './api/patientApi'
 export { PatientCard } from './ui/PatientCard'
 export { PatientSearchBar } from './ui/PatientSearchBar'

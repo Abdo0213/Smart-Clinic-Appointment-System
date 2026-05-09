@@ -1,7 +1,7 @@
 "use client"
 
 import { useAuthStore } from "@/features/auth"
-import { useGetPatient } from "@/entities/patient"
+import { useGetMe } from "@/entities/patient"
 import { useGetAppointments } from "@/entities/appointment"
 import { ROUTE_PATHS } from "@/shared/config/appConfig"
 import { LoadingSpinner } from "@/shared/ui/loading-spinner/loading-spinner"
@@ -16,9 +16,10 @@ import { CalendarIcon, UserIcon, ReceiptIcon, PlusIcon } from "lucide-react"
 export default function PatientDashboardPage() {
   const router = useRouter()
   const user = useAuthStore((s) => s.user)
-  const patientId = user?.patientId ?? ""
 
-  const { data: patient, isLoading: patientLoading } = useGetPatient(patientId)
+  const { data: patient, isLoading: patientLoading } = useGetMe()
+  const patientId = patient?.id ?? ""
+
   const { data: appointmentsData, isLoading: appointmentsLoading } = useGetAppointments({
     patientId,
     page: 0,

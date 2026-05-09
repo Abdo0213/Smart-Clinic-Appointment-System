@@ -6,6 +6,7 @@ import { z } from "zod"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { patientApi } from "@/entities/patient/api/patientApi"
 import { useGetPatient } from "@/entities/patient"
+import { useUpdateProfile } from "@/features/auth"
 import { Button } from "@/components/ui/button"
 import {
   Form,
@@ -34,6 +35,7 @@ const genderOptions = ["MALE", "FEMALE", "OTHER"] as const
 const updateSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
   lastName: z.string().min(2, "Last name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
   dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format must be YYYY-MM-DD"),
   gender: z.enum(genderOptions),
   phone: z.string().min(10, "Phone number must be at least 10 digits"),
@@ -50,12 +52,14 @@ type UpdateFormValues = z.infer<typeof updateSchema>
 
 interface UpdatePatientFormProps {
   patientId: string
+  email?: string
   onSuccess?: () => void
 }
 
-export function UpdatePatientForm({ patientId, onSuccess }: UpdatePatientFormProps) {
+export function UpdatePatientForm({ patientId, email: initialEmail, onSuccess }: UpdatePatientFormProps) {
   const queryClient = useQueryClient()
   const { data: patient, isLoading, isError } = useGetPatient(patientId)
+  const updateProfile = useUpdateProfile()
 
   const form = useForm<UpdateFormValues>({
     resolver: zodResolver(updateSchema),
@@ -63,6 +67,7 @@ export function UpdatePatientForm({ patientId, onSuccess }: UpdatePatientFormPro
       ? {
           firstName: patient.firstName,
           lastName: patient.lastName,
+          email: initialEmail || "",
           dateOfBirth: patient.dateOfBirth,
           gender: patient.gender,
           phone: patient.phone,
@@ -78,6 +83,7 @@ export function UpdatePatientForm({ patientId, onSuccess }: UpdatePatientFormPro
     defaultValues: {
       firstName: "",
       lastName: "",
+      email: "",
       dateOfBirth: "",
       gender: undefined,
       phone: "",
@@ -91,15 +97,7 @@ export function UpdatePatientForm({ patientId, onSuccess }: UpdatePatientFormPro
     },
   })
 
-  if (isLoading) {
-    return <div className="py-6 text-center text-sm text-muted-foreground">Loading patient...</div>
-  }
-
-  if (isError || !patient) {
-    return <div className="py-6 text-center text-sm text-destructive">Unable to load patient.</div>
-  }
-
-  const { mutate, isPending } = useMutation({
+  const { mutateAsync, isPending } = useMutation({
     mutationFn: (data: UpdateFormValues) => patientApi.update(patientId, data),
     onSuccess: () => {
       toast.success("Patient updated successfully")
@@ -116,8 +114,34 @@ export function UpdatePatientForm({ patientId, onSuccess }: UpdatePatientFormPro
     },
   })
 
-  function onSubmit(values: UpdateFormValues) {
-    mutate(values)
+  if (isLoading) {
+    return <div className="py-6 text-center text-sm text-muted-foreground">Loading patient...</div>
+  }
+
+  if (isError || !patient) {
+    return <div className="py-6 text-center text-sm text-destructive">Unable to load patient.</div>
+  }
+
+  async function onSubmit(values: UpdateFormValues) {
+    try {
+      // 1. Update Auth Profile (firstName, lastName, email)
+      await updateProfile.mutateAsync({
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+      })
+
+      // 2. Update Patient Profile
+      const { email: _email, ...patientData } = values
+      await mutateAsync({
+        ...patientData,
+        userId: patient!.userId,
+      })
+
+      onSuccess?.()
+    } catch (error) {
+      // Errors handled by mutations
+    }
   }
 
   return (
@@ -151,6 +175,20 @@ export function UpdatePatientForm({ patientId, onSuccess }: UpdatePatientFormPro
             )}
           />
         </div>
+
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email Address</FormLabel>
+              <FormControl>
+                <Input placeholder="email@example.com" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <div className="grid grid-cols-2 gap-4">
           <FormField

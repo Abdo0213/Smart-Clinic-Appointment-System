@@ -200,24 +200,47 @@ namespace Auth.Application.Services
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null) return (false, "User not found");
 
-            bool nameChanged = false;
+            bool profileChanged = false;
             if (!string.IsNullOrEmpty(model.FirstName) && user.FirstName != model.FirstName)
             {
                 user.FirstName = model.FirstName;
-                nameChanged = true;
+                profileChanged = true;
             }
             if (!string.IsNullOrEmpty(model.LastName) && user.LastName != model.LastName)
             {
                 user.LastName = model.LastName;
-                nameChanged = true;
+                profileChanged = true;
+            }
+            if (!string.IsNullOrEmpty(model.Email) && user.Email != model.Email)
+            {
+                var existingUser = await _userManager.FindByEmailAsync(model.Email);
+                if (existingUser != null && existingUser.Id != userId)
+                {
+                    return (false, "Email is already taken");
+                }
+                
+                // Update object in memory first so subsequent UpdateAsync doesn't overwrite it
+                user.Email = model.Email;
+                user.UserName = model.Email;
+                user.NormalizedEmail = model.Email.ToUpper();
+                user.NormalizedUserName = model.Email.ToUpper();
+
+                var emailResult = await _userManager.SetEmailAsync(user, model.Email);
+                if (!emailResult.Succeeded) return (false, string.Join(", ", emailResult.Errors.Select(e => e.Description)));
+                
+                var userNameResult = await _userManager.SetUserNameAsync(user, model.Email);
+                if (!userNameResult.Succeeded) return (false, string.Join(", ", userNameResult.Errors.Select(e => e.Description)));
+                
+                profileChanged = true;
             }
 
-            if (nameChanged)
+            if (profileChanged)
             {
+                Console.WriteLine($"Updating user profile: {user.Id}, Email: {user.Email}, Name: {user.FirstName} {user.LastName}");
                 var result = await _userManager.UpdateAsync(user);
                 if (!result.Succeeded) return (false, string.Join(", ", result.Errors.Select(e => e.Description)));
 
-                // Sync names with other services
+                // Sync with other services (if name changed)
                 var roles = await _userManager.GetRolesAsync(user);
                 var role = roles.FirstOrDefault();
                 var client = _httpClientFactory.CreateClient();
@@ -294,7 +317,7 @@ namespace Auth.Application.Services
         {
             var claims = new List<Claim>
             {
-                new(JwtRegisteredClaimNames.Sub, user.Email!),
+                new(JwtRegisteredClaimNames.Sub, user.Id),
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new(ClaimTypes.NameIdentifier, user.Id),
                 new(ClaimTypes.Email, user.Email!)

@@ -17,6 +17,13 @@ export function useGetPatient(id: string) {
   })
 }
 
+export function useGetMe() {
+  return useQuery({
+    queryKey: ['patients', 'me'],
+    queryFn: () => patientApi.getMe(),
+  })
+}
+
 export function useCreatePatient() {
   const queryClient = useQueryClient()
   return useMutation({

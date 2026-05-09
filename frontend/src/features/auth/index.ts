@@ -9,3 +9,5 @@ export { LoginForm } from "@/features/auth/ui/LoginForm";
 export { RegisterForm } from "@/features/auth/ui/RegisterForm";
 export { AuthGuard } from "@/features/auth/ui/AuthGuard";
 export { LogoutButton } from "@/features/auth/ui/LogoutButton";
+export { useUpdateProfile } from "@/features/auth/api/profile";
+export { ChangePasswordForm } from "@/features/auth/ui/ChangePasswordForm";

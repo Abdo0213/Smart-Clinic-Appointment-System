@@ -9,6 +9,7 @@ import java.util.UUID;
 @Builder
 public class PatientResponse {
     public UUID id;
+    public UUID userId;
     public String firstName;
     public String lastName;
     public LocalDate dateOfBirth;

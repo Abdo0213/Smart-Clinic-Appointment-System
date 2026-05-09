@@ -86,7 +86,10 @@ export default function DoctorDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card
+          className="cursor-pointer transition-shadow hover:shadow-md border-primary/20 bg-primary/5"
+          onClick={() => router.push(ROUTE_PATHS.DOCTOR_QUEUE)}
+        >
           <CardHeader className="flex flex-row items-center gap-3 pb-2">
             <StethoscopeIcon className="size-5 text-primary" />
             <CardTitle className="text-sm font-medium">Start Visit</CardTitle>

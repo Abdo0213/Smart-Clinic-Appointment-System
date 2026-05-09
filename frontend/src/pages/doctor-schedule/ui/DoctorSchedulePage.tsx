@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { CalendarIcon, PlusIcon, TrashIcon, AlertCircleIcon } from "lucide-react"
 import { toast } from "sonner"
 
@@ -76,6 +77,7 @@ export default function DoctorSchedulePage() {
 
   const [previewDate, setPreviewDate] = useState("")
   const { data: slotAvailability, isLoading: slotsLoading } = useGetAvailableSlots(doctorId, previewDate)
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
 
   const [breaks, setBreaks] = useState<ScheduleBreak[]>([])
   const [breakErrors, setBreakErrors] = useState<string[]>([])
@@ -139,7 +141,14 @@ export default function DoctorSchedulePage() {
         doctorId,
         data: {
           ...data,
-          breaks: breaks.filter((b) => b.breakStart && b.breakEnd),
+          startTime: `${data.startTime}:00`,
+          endTime: `${data.endTime}:00`,
+          breaks: breaks
+            .filter((b) => b.breakStart && b.breakEnd)
+            .map((b) => ({
+              breakStart: `${b.breakStart}:00`,
+              breakEnd: `${b.breakEnd}:00`,
+            })),
         },
       },
       {
@@ -148,6 +157,7 @@ export default function DoctorSchedulePage() {
           form.reset()
           setBreaks([])
           setBreakErrors([])
+          setIsCreateOpen(false)
         },
         onError: (error: unknown) => {
           const status =
@@ -171,15 +181,20 @@ export default function DoctorSchedulePage() {
 
   return (
     <div className="space-y-6 p-6">
-      <h1 className="text-2xl font-bold">Schedule Management</h1>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Create New Schedule</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Schedule Management</h1>
+        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <PlusIcon className="mr-2 size-4" />
+              Create Schedule
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Create New Schedule</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
               <div className="space-y-2">
                 <Label>Date</Label>
                 <Input type="date" {...form.register("date")} />
@@ -278,8 +293,12 @@ export default function DoctorSchedulePage() {
                 {createSchedule.isPending ? "Creating..." : "Create Schedule"}
               </Button>
             </form>
-          </CardContent>
-        </Card>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+
 
         <div className="space-y-6">
           <Card>
