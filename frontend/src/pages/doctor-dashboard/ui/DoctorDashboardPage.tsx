@@ -30,7 +30,7 @@ export default function DoctorDashboardPage() {
   })
 
   const todayAppointments = appointmentsData?.content ?? []
-  const bookedToday = todayAppointments.filter((a) => a.status === "BOOKED" || a.status === "ARRIVED")
+  const bookedToday = todayAppointments.filter((a) => a.status === "REQUESTED" && a.slotDate === getTodayISO())
 
   if (doctorLoading) {
     return (

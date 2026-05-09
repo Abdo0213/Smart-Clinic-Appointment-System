@@ -8,18 +8,15 @@ import type { AppointmentStatus } from './types'
  */
 export const VALID_TRANSITIONS: Record<AppointmentStatus, AppointmentStatus[]> = {
   REQUESTED: ['CONFIRMED', 'CANCELLED'],
-  CONFIRMED: ['ARRIVED', 'CANCELLED'],
-  BOOKED: ['ARRIVED', 'CANCELLED'],
-  ARRIVED: ['COMPLETED', 'CANCELLED', 'NO_SHOW'],
+  CONFIRMED: ['COMPLETED', 'CANCELLED'],
   COMPLETED: [],
   CANCELLED: [],
-  NO_SHOW: [],
 }
 
 /**
  * Terminal statuses from which no transitions are allowed.
  */
-export const TERMINAL_STATUSES: AppointmentStatus[] = ['COMPLETED', 'CANCELLED', 'NO_SHOW']
+export const TERMINAL_STATUSES: AppointmentStatus[] = ['COMPLETED', 'CANCELLED']
 
 /**
  * Check if a status transition is valid according to the state machine.
@@ -55,5 +52,5 @@ export function canCancel(status: AppointmentStatus): boolean {
  * Only BOOKED appointments can be rescheduled.
  */
 export function canReschedule(status: AppointmentStatus): boolean {
-  return status === 'BOOKED'
+  return status === 'REQUESTED'
 }

@@ -94,48 +94,16 @@ export default function DailyQueuePage() {
                 <div className="flex items-center gap-2">
                   <AppointmentStatusBadge status={appt.status} />
 
-                  {appt.status === "BOOKED" && (
+                  {appt.status === "REQUESTED" && (
                     <Button
-                      variant="outline"
                       size="sm"
                       onClick={() =>
-                        setConfirmAction({ appointment: appt, status: "ARRIVED" })
+                        router.push(ROUTE_PATHS.DOCTOR_VISIT(appt.id))
                       }
                     >
-                      Arrived
+                      <StethoscopeIcon className="mr-1 size-4" />
+                      Start Visit
                     </Button>
-                  )}
-
-                  {appt.status === "ARRIVED" && (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          setConfirmAction({ appointment: appt, status: "COMPLETED" })
-                        }
-                      >
-                        Completed
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          setConfirmAction({ appointment: appt, status: "NO_SHOW" })
-                        }
-                      >
-                        No Show
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={() =>
-                          router.push(ROUTE_PATHS.DOCTOR_VISIT(appt.id))
-                        }
-                      >
-                        <StethoscopeIcon className="mr-1 size-4" />
-                        Start Visit
-                      </Button>
-                    </>
                   )}
                 </div>
               </CardContent>

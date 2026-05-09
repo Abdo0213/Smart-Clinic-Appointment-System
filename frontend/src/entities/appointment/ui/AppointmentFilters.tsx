@@ -62,7 +62,9 @@ export function AppointmentFilters({ onFilterChange, doctors }: AppointmentFilte
         }}
       >
         <SelectTrigger className="w-36">
-          <SelectValue placeholder="Status" />
+          <SelectValue placeholder="Status">
+            {status ? status.charAt(0) + status.slice(1).toLowerCase().replace('_', ' ') : undefined}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="">All</SelectItem>
@@ -83,7 +85,9 @@ export function AppointmentFilters({ onFilterChange, doctors }: AppointmentFilte
           }}
         >
           <SelectTrigger className="w-48">
-            <SelectValue placeholder="Doctor" />
+            <SelectValue placeholder="Doctor">
+              {doctorId ? doctors.find((d) => d.id === doctorId)?.name : undefined}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">All Doctors</SelectItem>

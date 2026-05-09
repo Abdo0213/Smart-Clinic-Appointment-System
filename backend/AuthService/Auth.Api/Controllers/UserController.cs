@@ -45,7 +45,10 @@ public class UserController : ControllerBase
     {
         var (user, errors) = await _userService.CreateUserAsync(model);
         if (user == null)
-            return BadRequest(errors);
+        {
+            var firstError = errors.FirstOrDefault()?.Description ?? "Failed to create user";
+            return BadRequest(new { message = firstError, errors = errors });
+        }
 
         if (model.Role.Equals("Doctor", StringComparison.OrdinalIgnoreCase))
         {
@@ -74,6 +77,33 @@ public class UserController : ControllerBase
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception when calling Doctor Service: {ex.Message}");
+            }
+        }
+        else if (model.Role.Equals("Patient", StringComparison.OrdinalIgnoreCase))
+        {
+            try
+            {
+                var patientServiceUrl = _configuration["Services:PatientService"] ?? "http://localhost:8083";
+                var client = _httpClientFactory.CreateClient();
+                
+                var patientData = new
+                {
+                    userId = user.Id,
+                    firstName = string.IsNullOrWhiteSpace(model.FirstName) ? "Patient" : model.FirstName,
+                    lastName = string.IsNullOrWhiteSpace(model.LastName) ? "Unknown" : model.LastName,
+                    phone = "Unknown"
+                };
+
+                var response = await client.PostAsJsonAsync($"{patientServiceUrl}/patients", patientData);
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"Failed to create patient record: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception when calling Patient Service: {ex.Message}");
             }
         }
 

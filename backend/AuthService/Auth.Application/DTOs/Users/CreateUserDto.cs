@@ -13,7 +13,7 @@ namespace Auth.Application.DTOs.Users
         public string Password { get; set; } = null!;
 
         [Required]
-        [RegularExpression("(?i)^(Doctor|Receptionist)$", ErrorMessage = "Role must be Doctor or Receptionist.")]
+        [RegularExpression("(?i)^(Admin|Doctor|Patient|Receptionist)$", ErrorMessage = "Invalid role.")]
         public string Role { get; set; } = null!;
 
         public string? FirstName { get; set; }

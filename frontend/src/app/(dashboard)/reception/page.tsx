@@ -56,9 +56,9 @@ export default function ReceptionDashboardPage() {
   })
 
   const { data: todayStats } = useGetAppointments({ date: today, size: 1 })
-  const { data: todayArrivedStats } = useGetAppointments({ date: today, status: 'ARRIVED', size: 1 })
-  const { data: todayCompletedStats } = useGetAppointments({ date: today, status: 'COMPLETED', size: 1 })
-  const { data: todayNoShowStats } = useGetAppointments({ date: today, status: 'NO_SHOW', size: 1 })
+  const { data: todayRequestedStats } = useGetAppointments({ date: today, status: 'REQUESTED', size: 1 })
+  const { data: todayCompletedStats } = useGetAppointments({ date: today, status: 'CONFIRMED', size: 1 })
+  const { data: todayCancelledStats } = useGetAppointments({ date: today, status: 'CANCELLED', size: 1 })
   const { data: doctorsData } = useGetDoctors({})
 
   const appointments = appointmentsData?.content ?? []
@@ -145,16 +145,16 @@ export default function ReceptionDashboardPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Arrived</CardTitle>
+            <CardTitle className="text-sm font-medium">Requested</CardTitle>
             <UsersIcon className="size-4 text-yellow-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{todayArrivedStats?.totalElements ?? 0}</div>
+            <div className="text-2xl font-bold text-yellow-600">{todayRequestedStats?.totalElements ?? 0}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed</CardTitle>
+            <CardTitle className="text-sm font-medium">Confirmed</CardTitle>
             <CheckCircle2Icon className="size-4 text-green-600" />
           </CardHeader>
           <CardContent>
@@ -163,11 +163,11 @@ export default function ReceptionDashboardPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">No Show</CardTitle>
+            <CardTitle className="text-sm font-medium">Cancelled</CardTitle>
             <AlertTriangleIcon className="size-4 text-gray-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-500">{todayNoShowStats?.totalElements ?? 0}</div>
+            <div className="text-2xl font-bold text-gray-500">{todayCancelledStats?.totalElements ?? 0}</div>
           </CardContent>
         </Card>
       </div>

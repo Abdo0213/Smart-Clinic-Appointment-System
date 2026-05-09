@@ -23,11 +23,8 @@ interface StatusUpdateDropdownProps {
 const STATUS_LABELS: Record<AppointmentStatus, string> = {
   REQUESTED: 'Requested',
   CONFIRMED: 'Confirmed',
-  BOOKED: 'Booked',
-  ARRIVED: 'Arrived',
   COMPLETED: 'Completed',
   CANCELLED: 'Cancelled',
-  NO_SHOW: 'No Show',
 }
 
 export function StatusUpdateDropdown({

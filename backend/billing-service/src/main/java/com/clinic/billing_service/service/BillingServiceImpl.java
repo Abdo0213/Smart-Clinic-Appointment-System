@@ -60,10 +60,10 @@ public class BillingServiceImpl implements BillingService {
         // 3. Check visit exists (8085)
         checkVisitExists(request.getVisitId());
 
-        // 4. Create Invoice
         Invoice invoice = Invoice.builder()
                 .visitId(request.getVisitId())
                 .patientId(request.getPatientId())
+                .appointmentId(request.getAppointmentId())
                 .status(InvoiceStatus.PENDING)
                 .build();
 
@@ -168,7 +168,12 @@ public class BillingServiceImpl implements BillingService {
 
         invoice.setStatus(InvoiceStatus.PAID);
         invoice.setPaidAt(LocalDateTime.now());
-        InvoiceDTO response = mapToDTO(invoiceRepository.save(invoice));
+        Invoice savedInvoice = invoiceRepository.save(invoice);
+
+        // Update appointment status to COMPLETED
+        updateAppointmentStatus(savedInvoice.getAppointmentId(), "COMPLETED");
+
+        InvoiceDTO response = mapToDTO(savedInvoice);
         populateDetails(response);
         return response;
     }

@@ -69,9 +69,8 @@ export interface WaitlistEntry {
 }
 
 export const APPOINTMENT_STATUS_VALUES: AppointmentStatus[] = [
-  'BOOKED',
-  'ARRIVED',
+  'REQUESTED',
+  'CONFIRMED',
   'COMPLETED',
   'CANCELLED',
-  'NO_SHOW',
 ]

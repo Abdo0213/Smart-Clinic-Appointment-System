@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useGetAppointments, AppointmentStatusBadge, useUpdateAppointmentStatus } from "@/entities/appointment"
 import { useGetPatients, PatientSearchBar } from "@/entities/patient"
-import { useGetInvoices, InvoiceStatusBadge } from "@/entities/invoice"
+import { useGetInvoices, InvoiceStatusBadge, useMarkAsPaid } from "@/entities/invoice"
 import { ROUTE_PATHS } from "@/shared/config/appConfig"
 import { formatDate } from "@/shared/lib/formatDate"
 import { formatCurrency } from "@/shared/lib/formatCurrency"
@@ -36,6 +36,7 @@ export default function ReceptionDashboardPage() {
   const router = useRouter()
   const [patientFilters, setPatientFilters] = useState<{ name?: string; phone?: string }>({})
   const updateStatusMutation = useUpdateAppointmentStatus()
+  const markAsPaidMutation = useMarkAsPaid()
 
   const { data: todayAppointmentsData, isLoading: appointmentsLoading } = useGetAppointments({
     date: getTodayISO(),
@@ -127,26 +128,26 @@ export default function ReceptionDashboardPage() {
             ) : (
               <div className="space-y-3">
                 {todayAppointments.map((appt) => (
-                    <div className="flex items-center gap-2">
-                      <Select
-                        defaultValue={appt.status}
-                        onValueChange={(newStatus) => 
-                          updateStatusMutation.mutate({ id: appt.id, status: newStatus as any })
-                        }
-                        disabled={updateStatusMutation.isPending}
-                      >
-                        <SelectTrigger className="h-8 w-32">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="REQUESTED">Requested</SelectItem>
-                          <SelectItem value="CONFIRMED">Confirmed</SelectItem>
-                          <SelectItem value="ARRIVED">Arrived</SelectItem>
-                          <SelectItem value="COMPLETED">Completed</SelectItem>
-                          <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <Select
+                      defaultValue={appt.status}
+                      onValueChange={(newStatus) =>
+                        updateStatusMutation.mutate({ id: appt.id, status: newStatus as any })
+                      }
+                      disabled={updateStatusMutation.isPending}
+                    >
+                      <SelectTrigger className="h-8 w-32">
+                        <SelectValue>
+                          {appt.status.charAt(0) + appt.status.slice(1).toLowerCase()}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="REQUESTED">Requested</SelectItem>
+                        <SelectItem value="CONFIRMED">Confirmed</SelectItem>
+                        <SelectItem value="COMPLETED">Completed</SelectItem>
+                        <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 ))}
               </div>
@@ -226,6 +227,14 @@ export default function ReceptionDashboardPage() {
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{formatCurrency(inv.totalAmount)}</span>
                         <InvoiceStatusBadge status={inv.status} />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => markAsPaidMutation.mutate(inv.id)}
+                          disabled={markAsPaidMutation.isPending}
+                        >
+                          Pay
+                        </Button>
                       </div>
                     </div>
                   ))}
@@ -235,6 +244,6 @@ export default function ReceptionDashboardPage() {
           </Card>
         </div>
       </div>
-    </div>
+    </div >
   )
 }

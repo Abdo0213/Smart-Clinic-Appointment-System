@@ -27,10 +27,12 @@ export default function DailyQueuePage() {
   // Summary counts
   const summary = {
     total: sortedAppointments.length,
-    booked: sortedAppointments.filter((a) => a.status === 'BOOKED').length,
-    arrived: sortedAppointments.filter((a) => a.status === 'ARRIVED').length,
+    requested: sortedAppointments.filter((a) => a.status === 'REQUESTED').length,
+    // arrived: sortedAppointments.filter((a) => a.status === 'ARRIVED').length,
+    confirmed: sortedAppointments.filter((a) => a.status === 'CONFIRMED').length,
     completed: sortedAppointments.filter((a) => a.status === 'COMPLETED').length,
-    noShow: sortedAppointments.filter((a) => a.status === 'NO_SHOW').length,
+    cancelled: sortedAppointments.filter((a) => a.status === 'CANCELLED').length,
+    // noShow: sortedAppointments.filter((a) => a.status === 'NO_SHOW').length,
   }
 
   return (
@@ -55,10 +57,10 @@ export default function DailyQueuePage() {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
         {[
           { label: 'Total', value: summary.total, color: 'text-foreground' },
-          { label: 'Booked', value: summary.booked, color: 'text-blue-600 dark:text-blue-400' },
-          { label: 'Arrived', value: summary.arrived, color: 'text-yellow-600 dark:text-yellow-400' },
+          { label: 'Requested', value: summary.requested, color: 'text-blue-600 dark:text-blue-400' },
+          { label: 'Confirmed', value: summary.confirmed, color: 'text-yellow-600 dark:text-yellow-400' },
           { label: 'Completed', value: summary.completed, color: 'text-green-600 dark:text-green-400' },
-          { label: 'No Show', value: summary.noShow, color: 'text-gray-600 dark:text-gray-400' },
+          { label: 'Cancelled', value: summary.cancelled, color: 'text-gray-600 dark:text-gray-400' },
         ].map((stat) => (
           <Card key={stat.label}>
             <CardContent className="py-3 text-center">

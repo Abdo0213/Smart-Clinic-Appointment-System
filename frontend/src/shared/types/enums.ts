@@ -3,11 +3,8 @@ export type UserRole = "Patient" | "Doctor" | "Receptionist" | "Admin";
 export type AppointmentStatus =
   | "REQUESTED"
   | "CONFIRMED"
-  | "BOOKED"
-  | "ARRIVED"
   | "COMPLETED"
   | "CANCELLED"
-  | "NO_SHOW";
 
 export type InvoiceStatus = "PENDING" | "PAID" | "WAIVED";
 

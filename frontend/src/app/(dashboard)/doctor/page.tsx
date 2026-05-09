@@ -14,8 +14,8 @@ export default function DoctorDashboardPage() {
   const { data: appointmentsData } = useGetAppointments({ doctorId: user?.doctorId ?? '', date: today, size: 50 })
 
   const appointments = appointmentsData?.content ?? []
-  const booked = appointments.filter((a) => a.status === 'BOOKED')
-  const arrived = appointments.filter((a) => a.status === 'ARRIVED')
+  const requested = appointments.filter((a) => a.status === 'REQUESTED')
+  const confirmed = appointments.filter((a) => a.status === 'CONFIRMED')
 
   return (
     <div className="space-y-6">
@@ -32,20 +32,20 @@ export default function DoctorDashboardPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Booked</CardTitle>
+            <CardTitle className="text-sm font-medium">Requested</CardTitle>
             <ClockIcon className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{booked.length}</div>
+            <div className="text-2xl font-bold">{requested.length}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Arrived</CardTitle>
+            <CardTitle className="text-sm font-medium">Confirmed</CardTitle>
             <UsersIcon className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{arrived.length}</div>
+            <div className="text-2xl font-bold">{confirmed.length}</div>
           </CardContent>
         </Card>
       </div>

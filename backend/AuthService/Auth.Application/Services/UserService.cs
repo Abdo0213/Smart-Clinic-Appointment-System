@@ -10,7 +10,7 @@ namespace Auth.Application.Services
     public class UserService : IUserService
     {
         private static readonly HashSet<string> AllowedStaffRoles =
-            new(StringComparer.OrdinalIgnoreCase) { "Doctor", "Receptionist" };
+            new(StringComparer.OrdinalIgnoreCase) { "Admin", "Doctor", "Patient", "Receptionist" };
 
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
@@ -79,7 +79,7 @@ namespace Auth.Application.Services
             {
                 return (null, new[]
                 {
-                    new IdentityError { Description = "Role must be Doctor or Receptionist." }
+                    new IdentityError { Description = "Invalid role specified." }
                 });
             }
 

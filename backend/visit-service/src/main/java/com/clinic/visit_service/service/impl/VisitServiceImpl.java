@@ -162,6 +162,7 @@ public class VisitServiceImpl implements VisitService {
         visit.setIsSigned(true);
         visit.setSignedAt(LocalDateTime.now());
         Visit savedVisit = visitRepository.save(visit);
+
         return visitMapper.toResponse(savedVisit);
     }
 
