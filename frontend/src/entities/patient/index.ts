@@ -3,3 +3,4 @@ export { useGetPatients, useGetPatient, useGetMe, useCreatePatient, useUpdatePat
 export { patientApi } from './api/patientApi'
 export { PatientCard } from './ui/PatientCard'
 export { PatientSearchBar } from './ui/PatientSearchBar'
+export { PatientSearchSelect } from './ui/PatientSearchSelect'

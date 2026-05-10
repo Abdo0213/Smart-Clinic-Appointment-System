@@ -18,6 +18,8 @@ public class AppointmentDto
     public string PatientName { get; set; } = string.Empty;
     [JsonPropertyName("createdAt")]
     public DateTime CreatedAt { get; set; }
+    [JsonPropertyName("slotDate")]
+    public DateTime SlotDate { get; set; }
 }
 
 public class InvoiceDto

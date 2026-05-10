@@ -66,14 +66,14 @@ public class AdminController : ControllerBase
             appointments = new
             {
                 total = appointments.Count,
-                confirmed = appointments.Count(a => a.Status == "CONFIRMED"),
-                pending = appointments.Count(a => a.Status == "REQUESTED"),
-                cancelled = appointments.Count(a => a.Status == "CANCELLED")
+                confirmed = appointments.Count(a => string.Equals(a.Status, "CONFIRMED", StringComparison.OrdinalIgnoreCase)),
+                pending = appointments.Count(a => string.Equals(a.Status, "REQUESTED", StringComparison.OrdinalIgnoreCase)),
+                cancelled = appointments.Count(a => string.Equals(a.Status, "CANCELLED", StringComparison.OrdinalIgnoreCase))
             },
             revenue = new
             {
                 totalBilled = invoices.Sum(i => i.TotalAmount),
-                pendingCollected = invoices.Where(i => i.Status == "PENDING").Sum(i => i.TotalAmount)
+                pendingCollected = invoices.Where(i => string.Equals(i.Status, "PENDING", StringComparison.OrdinalIgnoreCase)).Sum(i => i.TotalAmount)
             },
             staff = new
             {

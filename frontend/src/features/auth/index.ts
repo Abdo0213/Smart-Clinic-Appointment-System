@@ -11,3 +11,4 @@ export { AuthGuard } from "@/features/auth/ui/AuthGuard";
 export { LogoutButton } from "@/features/auth/ui/LogoutButton";
 export { useUpdateProfile } from "@/features/auth/api/profile";
 export { ChangePasswordForm } from "@/features/auth/ui/ChangePasswordForm";
+export { ProfileForm } from "@/features/auth/ui/ProfileForm";

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useGetAppointments, AppointmentStatusBadge, useUpdateAppointmentStatus } from "@/entities/appointment"
 import { useGetPatients, PatientSearchBar } from "@/entities/patient"
 import { useGetInvoices, InvoiceStatusBadge, useMarkAsPaid } from "@/entities/invoice"
+import { QuickBookDialog } from "@/features/appointment-booking"
 import { ROUTE_PATHS } from "@/shared/config/appConfig"
 import { formatDate } from "@/shared/lib/formatDate"
 import { formatCurrency } from "@/shared/lib/formatCurrency"
@@ -62,9 +63,12 @@ export default function ReceptionDashboardPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <div>
-        <h1 className="text-2xl font-bold">Reception Dashboard</h1>
-        <p className="text-muted-foreground">Manage your daily operations.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Reception Dashboard</h1>
+          <p className="text-muted-foreground">Manage your daily operations.</p>
+        </div>
+        <QuickBookDialog />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">

@@ -5,3 +5,4 @@ export { useBookAppointment, useCancelAppointment, useUpdateStatus, useJoinWaitl
 export { DoctorSlotPicker } from './ui/DoctorSlotPicker'
 export { AppointmentBookingWizard } from './ui/AppointmentBookingWizard'
 export { WaitlistButton } from './ui/WaitlistButton'
+export { QuickBookDialog } from './ui/QuickBookDialog'

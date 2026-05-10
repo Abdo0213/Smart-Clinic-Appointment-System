@@ -12,6 +12,7 @@ import type { Appointment, AppointmentStatus } from '@/entities/appointment'
 import { useGetDoctors } from '@/entities/doctor'
 import { StatusUpdateDropdown } from '@/features/appointment-status-update'
 import { CancelDialog } from '@/features/appointment-cancel'
+import { QuickBookDialog } from '@/features/appointment-booking'
 import { DataTable } from '@/shared/ui/data-table/data-table'
 import { LoadingSpinner } from '@/shared/ui/loading-spinner/loading-spinner'
 import { EmptyState } from '@/shared/ui/empty-state/empty-state'
@@ -77,7 +78,10 @@ export default function AdminAppointmentsPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <h1 className="text-2xl font-bold">Appointments</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Appointments</h1>
+        <QuickBookDialog />
+      </div>
       <AppointmentFiltersUI
         onFilterChange={(f) => { setFilters(f); setPage(0) }}
         doctors={doctors}

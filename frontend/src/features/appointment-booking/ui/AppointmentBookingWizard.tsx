@@ -14,7 +14,11 @@ import { useRouter } from 'next/navigation'
 import { formatCurrency } from '@/shared/lib/formatCurrency'
 import type { Appointment } from '@/entities/appointment'
 
-export function AppointmentBookingWizard() {
+interface AppointmentBookingWizardProps {
+  patientId?: string
+}
+
+export function AppointmentBookingWizard({ patientId: initialPatientId }: AppointmentBookingWizardProps) {
   const { step, selectedDoctorId, selectedDate, selectedSlot, reset } = useBookingStore()
   const user = useAuthStore((s) => s.user)
   const router = useRouter()
@@ -22,13 +26,15 @@ export function AppointmentBookingWizard() {
   const [bookingResult, setBookingResult] = useState<Appointment | null>(null)
   const [bookingError, setBookingError] = useState<string | null>(null)
 
+  const patientId = initialPatientId || user?.patientId
+
   const handleConfirm = async () => {
-    if (!user?.patientId || !selectedDoctorId || !selectedDate || !selectedSlot) return
+    if (!patientId || !selectedDoctorId || !selectedDate || !selectedSlot) return
 
     setBookingError(null)
     try {
       const result = await bookAppointment.mutateAsync({
-        patientId: user.patientId,
+        patientId,
         doctorId: selectedDoctorId,
         slotDate: selectedDate,
         slotStart: selectedSlot.slotStart,
@@ -79,7 +85,15 @@ export function AppointmentBookingWizard() {
           <Button onClick={() => { reset(); setBookingResult(null); setBookingError(null) }}>
             Book Another
           </Button>
-          <Button variant="outline" onClick={() => router.push(ROUTE_PATHS.PATIENT_APPOINTMENTS)}>
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              const target = user?.role === 'Admin' ? ROUTE_PATHS.ADMIN_APPOINTMENTS :
+                            user?.role === 'Receptionist' ? ROUTE_PATHS.RECEPTION_APPOINTMENTS : 
+                            ROUTE_PATHS.PATIENT_APPOINTMENTS;
+              router.push(target);
+            }}
+          >
             View Appointments
           </Button>
         </div>

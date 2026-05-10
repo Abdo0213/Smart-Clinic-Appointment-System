@@ -34,11 +34,11 @@ public class AppointmentApiClient : IAppointmentApiClient
         {
             if (DateTime.TryParse(dateFrom, out var df))
             {
-                result.Content = result.Content.Where(a => a.CreatedAt.Date >= df.Date).ToList();
+                result.Content = result.Content.Where(a => a.SlotDate.Date >= df.Date).ToList();
             }
             if (DateTime.TryParse(dateTo, out var dt))
             {
-                result.Content = result.Content.Where(a => a.CreatedAt.Date <= dt.Date).ToList();
+                result.Content = result.Content.Where(a => a.SlotDate.Date <= dt.Date).ToList();
             }
             result.TotalElements = result.Content.Count;
         }

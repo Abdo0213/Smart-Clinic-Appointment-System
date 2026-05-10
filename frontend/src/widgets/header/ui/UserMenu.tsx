@@ -44,7 +44,8 @@ export function UserMenu({ user }: UserMenuProps) {
               role === 'Patient' ? ROUTE_PATHS.PATIENT_PROFILE : 
               role === 'Doctor' ? ROUTE_PATHS.DOCTOR_PROFILE : 
               role === 'Admin' ? ROUTE_PATHS.ADMIN_PROFILE :
-              ROUTE_PATHS.ADMIN_DASHBOARD
+              role === 'Receptionist' ? ROUTE_PATHS.RECEPTION_PROFILE :
+              "/"
             } 
             className="flex cursor-pointer items-center gap-2"
           >
@@ -53,7 +54,16 @@ export function UserMenu({ user }: UserMenuProps) {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem>
-          <Link href={ROUTE_PATHS.ADMIN_DASHBOARD} className="flex cursor-pointer items-center gap-2">
+          <Link 
+            href={
+              role === 'Patient' ? ROUTE_PATHS.PATIENT_PROFILE : 
+              role === 'Doctor' ? ROUTE_PATHS.DOCTOR_PROFILE : 
+              role === 'Admin' ? ROUTE_PATHS.ADMIN_PROFILE :
+              role === 'Receptionist' ? ROUTE_PATHS.RECEPTION_PROFILE :
+              "/"
+            } 
+            className="flex cursor-pointer items-center gap-2"
+          >
             <SettingsIcon className="size-4" />
             Settings
           </Link>

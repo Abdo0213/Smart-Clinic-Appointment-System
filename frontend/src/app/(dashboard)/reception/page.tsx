@@ -31,6 +31,7 @@ import {
   AlertTriangleIcon,
   PlusIcon,
 } from 'lucide-react'
+import { QuickBookDialog } from '@/features/appointment-booking'
 
 export default function ReceptionDashboardPage() {
   const router = useRouter()
@@ -126,10 +127,7 @@ export default function ReceptionDashboardPage() {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Reception Dashboard</h1>
-        <Button onClick={() => router.push(ROUTE_PATHS.PATIENT_BOOK_APPOINTMENT)}>
-          <PlusIcon className="mr-1 size-4" />
-          Quick Book
-        </Button>
+        <QuickBookDialog />
       </div>
 
       {/* Summary stats */}
