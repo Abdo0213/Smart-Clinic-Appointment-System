@@ -17,11 +17,15 @@ public class PatientController {
 
     @PostMapping
     public PatientResponse create(
-            @RequestHeader(value = "X-User-Id", required = false) String userId,
+            @RequestHeader(value = "X-User-Id", required = false) String headerUserId,
             @RequestBody PatientRequest req) {
-        if (userId != null && !userId.isEmpty()) {
-            req.setUserId(UUID.fromString(userId));
+        
+        // If the request body doesn't have a userId, but we have one in the header (self-registration), use it.
+        // If the request body ALREADY has a userId (receptionist creating for someone else), keep it.
+        if (req.getUserId() == null && headerUserId != null && !headerUserId.isEmpty()) {
+            req.setUserId(UUID.fromString(headerUserId));
         }
+        
         return service.create(req);
     }
 

@@ -21,6 +21,7 @@ export interface Patient {
 }
 
 export interface CreatePatientRequest {
+  userId?: string
   firstName: string
   lastName: string
   dateOfBirth: string

@@ -128,12 +128,14 @@ export default function PatientProfilePage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Patient Profile</h1>
         <Dialog open={isUpdateOpen} onOpenChange={setIsUpdateOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline">
-              <PencilIcon className="mr-2 size-4" />
-              Edit Profile
-            </Button>
-          </DialogTrigger>
+          <DialogTrigger
+            render={
+              <Button variant="outline">
+                <PencilIcon className="mr-2 size-4" />
+                Edit Profile
+              </Button>
+            }
+          />
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Update Patient Profile</DialogTitle>

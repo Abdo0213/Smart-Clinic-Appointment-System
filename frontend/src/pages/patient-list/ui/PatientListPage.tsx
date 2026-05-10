@@ -43,7 +43,11 @@ const columns: ColumnDef<Patient>[] = [
   {
     accessorKey: "gender",
     header: "Gender",
-    cell: ({ row }) => row.original.gender.charAt(0) + row.original.gender.slice(1).toLowerCase(),
+    cell: ({ row }) => {
+      const gender = row.original.gender;
+      if (!gender) return "—";
+      return gender.charAt(0) + gender.slice(1).toLowerCase();
+    },
   },
   {
     accessorKey: "createdAt",
@@ -79,12 +83,14 @@ export default function PatientListPage() {
         <h1 className="text-2xl font-bold">Patients</h1>
         {canCreate && (
           <Dialog open={isRegisterOpen} onOpenChange={setIsRegisterOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <PlusIcon className="mr-1 size-4" />
-                Register Patient
-              </Button>
-            </DialogTrigger>
+            <DialogTrigger
+              render={
+                <Button>
+                  <PlusIcon className="mr-1 size-4" />
+                  Register Patient
+                </Button>
+              }
+            />
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Register New Patient</DialogTitle>

@@ -184,12 +184,14 @@ export default function DoctorSchedulePage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Schedule Management</h1>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <PlusIcon className="mr-2 size-4" />
-              Create Schedule
-            </Button>
-          </DialogTrigger>
+          <DialogTrigger
+            render={
+              <Button>
+                <PlusIcon className="mr-2 size-4" />
+                Create Schedule
+              </Button>
+            }
+          />
           <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New Schedule</DialogTitle>

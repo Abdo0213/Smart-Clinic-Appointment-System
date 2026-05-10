@@ -149,10 +149,6 @@ export default function InvoiceListPage() {
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Invoices</h1>
-        <Button onClick={() => router.push(`${ROUTE_PATHS.ADMIN_BILLING}/create`)}>
-          <PlusIcon className="mr-2 size-4" />
-          Create Invoice
-        </Button>
       </div>
 
       <div className="flex items-center gap-4">
@@ -175,7 +171,7 @@ export default function InvoiceListPage() {
           <LoadingSpinner size="lg" />
         </div>
       ) : invoices.length === 0 ? (
-        <EmptyState title="No invoices found" description="Create an invoice to get started." />
+        <EmptyState title="No invoices found" description="Invoices are automatically generated when a doctor signs a medical visit." />
       ) : (
         <DataTable
           columns={columns}

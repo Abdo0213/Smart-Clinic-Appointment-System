@@ -26,10 +26,16 @@ import { Textarea } from "@/components/ui/textarea"
 import type { Gender } from "@/shared/types/enums"
 import { toast } from "sonner"
 
+import { useCreateUser } from "@/features/auth/api/users"
+
 const genderOptions = ["MALE", "FEMALE", "OTHER"] as const
 const bloodTypeOptions = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const
 
 const registerSchema = z.object({
+  // User Account data
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  // Patient Profile data
   firstName: z.string().min(2, "First name must be at least 2 characters"),
   lastName: z.string().min(2, "Last name must be at least 2 characters"),
   dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format must be YYYY-MM-DD"),
@@ -48,10 +54,13 @@ type RegisterFormValues = z.infer<typeof registerSchema>
 
 export function RegisterPatientForm({ onSuccess }: { onSuccess?: () => void }) {
   const queryClient = useQueryClient()
+  const createUser = useCreateUser()
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
+      email: "",
+      password: "",
       firstName: "",
       lastName: "",
       dateOfBirth: "",
@@ -70,8 +79,9 @@ export function RegisterPatientForm({ onSuccess }: { onSuccess?: () => void }) {
   const { mutate, isPending } = useMutation({
     mutationFn: patientApi.create,
     onSuccess: () => {
-      toast.success("Patient registered successfully")
+      toast.success("Patient and User account created successfully")
       queryClient.invalidateQueries({ queryKey: ["patients"] })
+      queryClient.invalidateQueries({ queryKey: ["users"] })
       form.reset()
       onSuccess?.()
     },
@@ -80,17 +90,68 @@ export function RegisterPatientForm({ onSuccess }: { onSuccess?: () => void }) {
         error && typeof error === "object" && "response" in error
           ? (error as { response?: { data?: { message?: string } } })?.response?.data?.message
           : undefined
-      toast.error(message || "Registration failed")
+      toast.error(message || "Patient registration failed")
     },
   })
 
-  function onSubmit(values: RegisterFormValues) {
-    mutate(values)
+  async function onSubmit(values: RegisterFormValues) {
+    try {
+      // 1. Create the User account first
+      const newUser = await createUser.mutateAsync({
+        email: values.email,
+        password: values.password,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        role: "Patient",
+      })
+
+      // 2. Create the Patient profile linked to that User
+      const { email: _email, password: _password, ...patientData } = values
+      mutate({
+        ...patientData,
+        userId: newUser.id,
+      })
+    } catch (error: unknown) {
+      const message =
+        error && typeof error === "object" && "response" in error
+          ? (error as { response?: { data?: { message?: string } } })?.response?.data?.message
+          : undefined
+      toast.error(message || "Failed to create user account")
+    }
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email Address</FormLabel>
+                <FormControl>
+                  <Input placeholder="patient@example.com" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Initial Password</FormLabel>
+                <FormControl>
+                  <Input type="password" placeholder="••••••••" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}

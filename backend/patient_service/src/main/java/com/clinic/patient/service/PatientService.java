@@ -25,6 +25,18 @@ public class PatientService {
     private String billingServiceUrl;
 
     public PatientResponse create(PatientRequest req) {
+        // Upsert logic: if patient with this userId already exists (e.g. created by AuthService), update it.
+        if (req.getUserId() != null) {
+            var existing = repo.findByUserId(req.getUserId());
+            if (existing.isPresent()) {
+                Patient p = existing.get();
+                updatePatientFromRequest(p, req);
+                p.setUpdatedAt(LocalDateTime.now());
+                repo.save(p);
+                return mapToResponse(p);
+            }
+        }
+
         Patient p = new Patient();
         updatePatientFromRequest(p, req);
         p.setCreatedAt(LocalDateTime.now());
