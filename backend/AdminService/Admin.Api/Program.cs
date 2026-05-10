@@ -12,6 +12,16 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 // Configure EF Core with PostgreSQL
 builder.Services.AddDbContext<AdminDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -48,7 +58,7 @@ builder.Services.AddHttpClient<IAuthApiClient, AuthApiClient>(client =>
 });
 
 // Configure Storage Service
-var storageType = builder.Configuration["Storage:Type"] ?? "S3";
+var storageType = builder.Configuration["Storage:Type"] ?? "Local";
 
 if (storageType.Equals("S3", StringComparison.OrdinalIgnoreCase))
 {
@@ -83,6 +93,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("AllowFrontend");
 app.UseStaticFiles(); // Required to serve reports from wwwroot
 app.UseHttpsRedirection();
 

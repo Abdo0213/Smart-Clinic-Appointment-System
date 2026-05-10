@@ -13,7 +13,7 @@ public class LocalReportStorageService : IReportStorageService
     {
         // Default to wwwroot/reports if not configured
         _storagePath = config["Storage:LocalPath"] ?? Path.Combine(env.ContentRootPath, "wwwroot", "reports");
-        _baseUrl = config["Storage:BaseUrl"] ?? "http://localhost:5007"; // Assume Admin API port
+        _baseUrl = config["Storage:BaseUrl"] ?? "http://localhost:8088"; // Match Admin API port
 
         if (!Directory.Exists(_storagePath))
         {

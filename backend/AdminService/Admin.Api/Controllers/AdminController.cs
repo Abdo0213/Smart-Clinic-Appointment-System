@@ -424,6 +424,27 @@ public class AdminController : ControllerBase
         return Ok(new { downloadUrl, expiresInSeconds = 3600 });
     }
 
+    [HttpGet("reports/export-all")]
+    public async Task<IActionResult> ExportAllReports([FromQuery] string? dateFrom, [FromQuery] string? dateTo)
+    {
+        var summary = new SummaryReportResponse
+        {
+            Period = new PeriodDto { From = dateFrom ?? "all time", To = dateTo ?? "all time" },
+            Appointments = await GetAppointmentsReportData(dateFrom, dateTo, null),
+            Revenue = await GetRevenueReportData(dateFrom, dateTo),
+            Visits = await GetVisitsReportData(dateFrom, dateTo, null),
+            Doctors = await GetDoctorsReportData(null),
+            Patients = await GetPatientsReportData()
+        };
+
+        byte[] pdfContent = _pdfService.GenerateSummaryReport(summary);
+        string fileName = $"Clinic_Summary_{DateTime.UtcNow:yyyyMMdd}.pdf";
+
+        var downloadUrl = await _reportStorage.UploadReportAsync(fileName, pdfContent, "application/pdf");
+
+        return Ok(new { downloadUrl, expiresInSeconds = 3600 });
+    }
+
     // Helper methods to reuse logic from GET endpoints
     private async Task<AppointmentsReportResponse> GetAppointmentsReportData(string? dateFrom, string? dateTo, string? doctorId)
     {

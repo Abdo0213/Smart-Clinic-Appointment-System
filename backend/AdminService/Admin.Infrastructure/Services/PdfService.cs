@@ -94,7 +94,11 @@ public class PdfService : IPdfService
             {
                 page.Size(PageSizes.A4);
                 page.Margin(1, Unit.Centimetre);
-                page.Header().Text("Smart Clinic - Revenue Report").FontSize(20).SemiBold();
+                page.Header().Column(col =>
+                {
+                    col.Item().Text("Smart Clinic - Revenue Report").FontSize(20).SemiBold();
+                    col.Item().Text($"Period: {data.Period.From} to {data.Period.To}").FontSize(10).Italic();
+                });
                 
                 page.Content().PaddingVertical(1, Unit.Centimetre).Column(x =>
                 {
@@ -120,7 +124,11 @@ public class PdfService : IPdfService
             {
                 page.Size(PageSizes.A4);
                 page.Margin(1, Unit.Centimetre);
-                page.Header().Text("Smart Clinic - Clinical Visits Report").FontSize(20).SemiBold();
+                page.Header().Column(col =>
+                {
+                    col.Item().Text("Smart Clinic - Clinical Visits Report").FontSize(20).SemiBold();
+                    col.Item().Text($"Period: {data.Period.From} to {data.Period.To}").FontSize(10).Italic();
+                });
                 page.Content().PaddingVertical(1, Unit.Centimetre).Table(table =>
                 {
                     table.ColumnsDefinition(columns => { columns.RelativeColumn(); columns.RelativeColumn(); columns.RelativeColumn(); columns.RelativeColumn(); });
@@ -139,7 +147,11 @@ public class PdfService : IPdfService
             {
                 page.Size(PageSizes.A4);
                 page.Margin(1, Unit.Centimetre);
-                page.Header().Text("Smart Clinic - Doctors Directory").FontSize(20).SemiBold();
+                page.Header().Column(col =>
+                {
+                    col.Item().Text("Smart Clinic - Doctors Directory").FontSize(20).SemiBold();
+                    col.Item().Text($"As of: {DateTime.UtcNow:yyyy-MM-dd}").FontSize(10).Italic();
+                });
                 page.Content().PaddingVertical(1, Unit.Centimetre).Table(table =>
                 {
                     table.ColumnsDefinition(columns => { columns.RelativeColumn(); columns.RelativeColumn(); columns.RelativeColumn(); });
@@ -158,7 +170,11 @@ public class PdfService : IPdfService
             {
                 page.Size(PageSizes.A4);
                 page.Margin(1, Unit.Centimetre);
-                page.Header().Text("Smart Clinic - Patients Demographic Report").FontSize(20).SemiBold();
+                page.Header().Column(col =>
+                {
+                    col.Item().Text("Smart Clinic - Patients Demographic Report").FontSize(20).SemiBold();
+                    col.Item().Text($"As of: {DateTime.UtcNow:yyyy-MM-dd}").FontSize(10).Italic();
+                });
                 page.Content().PaddingVertical(1, Unit.Centimetre).Table(table =>
                 {
                     table.ColumnsDefinition(columns => { columns.RelativeColumn(); columns.RelativeColumn(); columns.RelativeColumn(); });
@@ -183,6 +199,85 @@ public class PdfService : IPdfService
                     table.ColumnsDefinition(columns => { columns.RelativeColumn(); columns.RelativeColumn(); columns.RelativeColumn(); columns.RelativeColumn(); });
                     table.Header(header => { header.Cell().Text("Time"); header.Cell().Text("Actor"); header.Cell().Text("Service"); header.Cell().Text("Action"); });
                     foreach (var item in data) { table.Cell().Text(item.OccurredAt.ToString("g")); table.Cell().Text(item.ActorId); table.Cell().Text(item.Service); table.Cell().Text(item.Action); }
+                });
+            });
+        }).GeneratePdf();
+    }
+
+    public byte[] GenerateSummaryReport(SummaryReportResponse data)
+    {
+        return Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4);
+                page.Margin(1, Unit.Centimetre);
+                page.DefaultTextStyle(x => x.FontSize(10).FontFamily(Fonts.Verdana));
+
+                page.Header().Column(col =>
+                {
+                    col.Item().Text("Smart Clinic - Comprehensive Summary Report").FontSize(22).SemiBold().FontColor(Colors.Blue.Medium);
+                    col.Item().Text($"Period: {data.Period.From} to {data.Period.To}").FontSize(12).Italic();
+                });
+
+                page.Content().PaddingVertical(1, Unit.Centimetre).Column(x =>
+                {
+                    x.Spacing(20);
+
+                    // 1. Appointments Section
+                    x.Item().Column(sec =>
+                    {
+                        sec.Item().Text("1. Appointments Overview").FontSize(14).SemiBold().Underline();
+                        sec.Item().Row(row =>
+                        {
+                            row.RelativeItem().Text($"Total: {data.Appointments.TotalAppointments}");
+                            row.RelativeItem().Text($"Completed: {data.Appointments.Completed}");
+                            row.RelativeItem().Text($"Cancelled: {data.Appointments.Cancelled}");
+                        });
+                    });
+
+                    // 2. Revenue Section
+                    x.Item().Column(sec =>
+                    {
+                        sec.Item().Text("2. Revenue Summary").FontSize(14).SemiBold().Underline();
+                        sec.Item().Row(row =>
+                        {
+                            row.RelativeItem().Text($"Total Billed: ${data.Revenue.TotalBilled:N2}");
+                            row.RelativeItem().Text($"Total Collected: ${data.Revenue.TotalCollected:N2}");
+                            row.RelativeItem().Text($"Pending: ${data.Revenue.Pending:N2}");
+                        });
+                    });
+
+                    // 3. Clinical Section
+                    x.Item().Column(sec =>
+                    {
+                        sec.Item().Text("3. Clinical Visits").FontSize(14).SemiBold().Underline();
+                        sec.Item().Row(row =>
+                        {
+                            row.RelativeItem().Text($"Total Visits: {data.Visits.TotalVisits}");
+                            row.RelativeItem().Text($"Signed: {data.Visits.SignedVisits}");
+                            row.RelativeItem().Text($"Unsigned: {data.Visits.UnsignedVisits}");
+                        });
+                    });
+
+                    // 4. Staff & Patients
+                    x.Item().Column(sec =>
+                    {
+                        sec.Item().Text("4. Staff & Patients Demographics").FontSize(14).SemiBold().Underline();
+                        sec.Item().Row(row =>
+                        {
+                            row.RelativeItem().Text($"Total Doctors: {data.Doctors.TotalDoctors} ({data.Doctors.ActiveDoctors} Active)");
+                            row.RelativeItem().Text($"Total Patients: {data.Patients.TotalPatients}");
+                        });
+                    });
+                    
+                    x.Item().PaddingTop(20).Text("Note: Detailed records are available in individual reports.").Italic().FontSize(9).FontColor(Colors.Grey.Medium);
+                });
+
+                page.Footer().AlignCenter().Text(x =>
+                {
+                    x.Span("Page ");
+                    x.CurrentPageNumber();
                 });
             });
         }).GeneratePdf();

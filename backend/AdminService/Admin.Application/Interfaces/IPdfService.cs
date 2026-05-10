@@ -11,4 +11,5 @@ public interface IPdfService
     byte[] GenerateDoctorsReport(DoctorsReportResponse data);
     byte[] GeneratePatientsReport(PatientsReportResponse data);
     byte[] GenerateAuditLogReport(IEnumerable<AuditLog> data);
+    byte[] GenerateSummaryReport(SummaryReportResponse data);
 }

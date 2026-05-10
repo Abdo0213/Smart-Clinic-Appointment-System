@@ -12,6 +12,7 @@ import { LoadingSpinner } from '@/shared/ui/loading-spinner/loading-spinner'
 import { formatCurrency } from '@/shared/lib/formatCurrency'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Button } from '@/components/ui/button'
 import {
   BarChart,
   Bar,
@@ -74,12 +75,14 @@ function useReportsQuery<T>(reportType: string, from?: string, to?: string) {
     queryKey: ['admin', 'reports', reportType, from, to],
     queryFn: async () => {
       const params: Record<string, string> = {}
-      if (from) params.from = from
-      if (to) params.to = to
-      const { data } = await apiClient.get<T>(`${API_ROUTES.ADMIN.REPORTS_APPOINTMENTS.replace('/appointments', `/${reportType}`)}`, { params })
+      if (from) params.dateFrom = from
+      if (to) params.dateTo = to
+      
+      const endpoint = `/admin/reports/${reportType}`;
+      const { data } = await apiClient.get<T>(endpoint, { params })
       return data
     },
-    enabled: !!from && !!to,
+    enabled: true, // Always load, backend will handle null dates
   })
 }
 
@@ -91,7 +94,7 @@ export default function ReportsPage() {
   const { data: appointmentData, isLoading: appointmentsLoading } = useReportsQuery<AppointmentsReport>('appointments', from, to)
   const { data: revenueData, isLoading: revenueLoading } = useReportsQuery<RevenueReport>('revenue', from, to)
   const { data: visitData, isLoading: visitsLoading } = useReportsQuery<VisitsReport>('visits', from, to)
-  const { data: doctorData, isLoading: doctorsLoading } = useReportsQuery<AppointmentsReport>('appointments', from, to)
+  const { data: doctorData, isLoading: doctorsLoading } = useReportsQuery<any>('doctors', from, to)
   const { data: patientData, isLoading: patientsLoading } = useReportsQuery<PatientsReport>('patients', from, to)
   const { data: noShowData, isLoading: noShowLoading } = useReportsQuery<NoShowReport>('no-show-rate', from, to)
 
@@ -171,7 +174,23 @@ export default function ReportsPage() {
           <h1 className="text-2xl font-bold">Reports</h1>
           <div className="flex items-center gap-3">
             <DateRangePicker dateRange={dateRange} onDateRangeChange={setDateRange} />
-            <ExportButton reportType="all" from={from} to={to} />
+            {dateRange && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setDateRange(undefined)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Clear
+              </Button>
+            )}
+            <ExportButton 
+              reportType="all" 
+              from={from} 
+              to={to} 
+              label="Export All PDF" 
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            />
           </div>
         </div>
 
@@ -187,8 +206,9 @@ export default function ReportsPage() {
 
           <TabsContent value="appointments" className="space-y-4">
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-base">Appointments Overview</CardTitle>
+                <ExportButton reportType="appointments" from={from} to={to} label="Export PDF" size="sm" />
               </CardHeader>
               <CardContent>
                 {appointmentsLoading ? (
@@ -218,8 +238,9 @@ export default function ReportsPage() {
 
           <TabsContent value="revenue" className="space-y-4">
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-base">Revenue Trend</CardTitle>
+                <ExportButton reportType="revenue" from={from} to={to} label="Export PDF" size="sm" />
               </CardHeader>
               <CardContent>
                 {revenueLoading ? (
@@ -248,8 +269,9 @@ export default function ReportsPage() {
 
           <TabsContent value="visits" className="space-y-4">
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-base">Visits Overview</CardTitle>
+                <ExportButton reportType="visits" from={from} to={to} label="Export PDF" size="sm" />
               </CardHeader>
               <CardContent>
                 {visitsLoading ? (

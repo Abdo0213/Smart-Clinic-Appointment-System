@@ -71,3 +71,13 @@ public class PeriodDto
     public string From { get; set; } = string.Empty;
     public string To { get; set; } = string.Empty;
 }
+
+public class SummaryReportResponse
+{
+    public PeriodDto Period { get; set; } = new();
+    public AppointmentsReportResponse Appointments { get; set; } = new();
+    public RevenueReportResponse Revenue { get; set; } = new();
+    public VisitsReportResponse Visits { get; set; } = new();
+    public DoctorsReportResponse Doctors { get; set; } = new();
+    public PatientsReportResponse Patients { get; set; } = new();
+}
