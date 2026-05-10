@@ -97,5 +97,15 @@ spring:
               args:
                 roles: Admin,Doctor,Receptionist,Patient
 
+        - id: notification-service
+          uri: http://localhost:8089
+          predicates:
+            - Path=/api/notifications/**
+          filters:
+            - RewritePath=/api/(?<segment>.*), /$\{segment}
+            - name: AuthenticationFilter
+              args:
+                roles: Admin,Doctor,Receptionist,Patient
+
 jwt:
   secret: YourSuperSecretKeyHere12345-MustBeLongerThan32Chars

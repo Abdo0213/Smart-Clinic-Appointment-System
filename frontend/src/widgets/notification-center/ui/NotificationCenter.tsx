@@ -80,13 +80,6 @@ export function NotificationCenter() {
 
       <Separator />
 
-      {/* Dev-mode stub indicator */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="bg-amber-500/10 px-4 py-1.5 text-center text-[10px] text-amber-600 dark:text-amber-400">
-          ⛔ Using stubbed notification data — backend endpoints not available
-        </div>
-      )}
-
       {/* Notification list */}
       {notifications.length === 0 ? (
         <NotificationEmptyState />

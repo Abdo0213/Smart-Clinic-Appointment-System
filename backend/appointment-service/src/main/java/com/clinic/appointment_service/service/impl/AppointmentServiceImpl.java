@@ -35,6 +35,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final WaitlistRepository waitlistRepository;
     private final AppointmentMapper appointmentMapper;
     private final RestTemplate restTemplate;
+    private final com.clinic.appointment_service.service.AwsNotificationService awsNotificationService;
 
     @Value("${services.doctor.url}")
     private String doctorServiceUrl;
@@ -55,16 +56,20 @@ public class AppointmentServiceImpl implements AppointmentService {
             request.getDoctorId(), request.getSlotDate(), request.getSlotStart(), request.getSlotEnd());
 
         // 1. Check if Doctor exists in Doctor Service
+        com.clinic.appointment_service.dto.external.DoctorDTO doctor;
         try {
-            restTemplate.getForObject(doctorServiceUrl + "/" + request.getDoctorId(), Object.class);
+            doctor = restTemplate.getForObject(doctorServiceUrl + "/" + request.getDoctorId(), com.clinic.appointment_service.dto.external.DoctorDTO.class);
+            if (doctor == null) throw new ResourceNotFoundException("Doctor not found.");
         } catch (Exception e) {
             log.error("Doctor Service error: {}", e.getMessage());
             throw new ResourceNotFoundException("Doctor not found in Doctor Service.");
         }
 
         // 1.1 Check if Patient exists in Patient Service
+        com.clinic.appointment_service.dto.external.PatientDTO patient;
         try {
-            restTemplate.getForObject(patientServiceUrl + "/" + request.getPatientId(), Object.class);
+            patient = restTemplate.getForObject(patientServiceUrl + "/" + request.getPatientId(), com.clinic.appointment_service.dto.external.PatientDTO.class);
+            if (patient == null) throw new ResourceNotFoundException("Patient not found.");
         } catch (Exception e) {
             log.error("Patient Service error: {}", e.getMessage());
             throw new ResourceNotFoundException("Patient not found in Patient Service.");
@@ -121,6 +126,11 @@ public class AppointmentServiceImpl implements AppointmentService {
             }
 
             Appointment saved = appointmentRepository.save(appointment);
+            
+            // 6. Trigger Notification
+            String doctorName = "Dr. " + doctor.getFirstName() + " " + doctor.getLastName();
+            awsNotificationService.publishAppointmentBooked(saved, patient.getEmail(), patient.getUserId(), doctorName);
+
             AppointmentResponseDTO response = appointmentMapper.toResponseDto(saved);
             populateNames(response);
             return response;
