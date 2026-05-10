@@ -44,11 +44,13 @@ export const API_ROUTES = {
     PRESCRIPTIONS: (id: string) => `/visits/${id}/prescriptions`,
     FOLLOW_UP: (id: string) => `/visits/${id}/follow-up`,
     PRESCRIPTION_PDF: (id: string, prescriptionId: string) => `/visits/${id}/prescriptions/${prescriptionId}/pdf`,
+    ALL_PRESCRIPTIONS_PDF: (id: string) => `/visits/${id}/prescriptions/pdf`,
     BY_APPOINTMENT: (appointmentId: string) => `/visits/appointment/${appointmentId}`,
   },
   BILLING: {
     INVOICES: "/billing/invoices",
     INVOICE_DETAIL: (id: string) => `/billing/invoices/${id}`,
+    BY_VISIT: (visitId: string) => `/billing/invoices/visit/${visitId}`,
     PAY: (id: string) => `/billing/invoices/${id}/pay`,
     WAIVE: (id: string) => `/billing/invoices/${id}/waive`,
   },

@@ -95,7 +95,7 @@ spring:
             - RewritePath=/api/(?<segment>.*), /$\{segment}
             - name: AuthenticationFilter
               args:
-                roles: Admin,Receptionist,Patient
+                roles: Admin,Doctor,Receptionist,Patient
 
 jwt:
   secret: YourSuperSecretKeyHere12345-MustBeLongerThan32Chars

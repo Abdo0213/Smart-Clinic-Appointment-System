@@ -19,6 +19,7 @@ export const ROUTE_PATHS = {
   DOCTOR_PROFILE: "/doctor/profile",
   DOCTOR_SCHEDULE: "/doctor/schedule",
   DOCTOR_QUEUE: "/doctor/queue",
+  DOCTOR_VISITS: "/doctor/visits",
   DOCTOR_VISIT: (id: string) => `/doctor/visits/${id}`,
   DOCTOR_VISIT_CREATE: (appointmentId: string) => `/doctor/visits/new/${appointmentId}`,
   RECEPTION_DASHBOARD: "/reception",
@@ -49,6 +50,7 @@ const ROLE_SIDEBAR_ITEMS: Record<UserRole, SidebarItem[]> = {
     { label: "My Profile", href: ROUTE_PATHS.DOCTOR_PROFILE, icon: "User" },
     { label: "Schedule", href: ROUTE_PATHS.DOCTOR_SCHEDULE, icon: "Clock" },
     { label: "Daily Queue", href: ROUTE_PATHS.DOCTOR_QUEUE, icon: "Users" },
+    { label: "Visit History", href: ROUTE_PATHS.DOCTOR_VISITS, icon: "FileText" },
   ],
   Receptionist: [
     { label: "Dashboard", href: ROUTE_PATHS.RECEPTION_DASHBOARD, icon: "LayoutDashboard" },
@@ -92,6 +94,7 @@ const ROLE_ALLOWED_PATHS: Record<UserRole, string[]> = {
     ROUTE_PATHS.DOCTOR_PROFILE,
     ROUTE_PATHS.DOCTOR_SCHEDULE,
     ROUTE_PATHS.DOCTOR_QUEUE,
+    ROUTE_PATHS.DOCTOR_VISITS,
     ROUTE_PATHS.LOGIN,
   ],
   Receptionist: [

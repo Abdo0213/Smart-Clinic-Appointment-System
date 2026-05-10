@@ -58,4 +58,9 @@ public class BillingController {
     public ResponseEntity<InvoiceDTO> waiveInvoice(@PathVariable UUID id, @Valid @RequestBody WaiveRequest request) {
         return ResponseEntity.ok(billingService.waiveInvoice(id, request));
     }
+
+    @GetMapping("/visit/{visitId}")
+    public ResponseEntity<InvoiceDTO> getInvoiceByVisitId(@PathVariable UUID visitId) {
+        return ResponseEntity.ok(billingService.getInvoiceByVisitId(visitId));
+    }
 }

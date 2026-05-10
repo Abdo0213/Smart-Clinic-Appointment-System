@@ -15,5 +15,6 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
     Page<Invoice> findByPatientId(UUID patientId, Pageable pageable);
     Page<Invoice> findByStatus(InvoiceStatus status, Pageable pageable);
     Page<Invoice> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end, Pageable pageable);
-    Page<Invoice> findByPatientIdAndStatusAndCreatedAtBetween(UUID patientId, InvoiceStatus status, LocalDateTime start, LocalDateTime end, Pageable pageable);
+    Page<Invoice> findByPatientIdAndStatusAndCreatedAtBetween(UUID patientId, InvoiceStatus status, LocalDateTime start, LocalDateTime dateEnd, Pageable pageable);
+    java.util.Optional<Invoice> findByVisitId(UUID visitId);
 }

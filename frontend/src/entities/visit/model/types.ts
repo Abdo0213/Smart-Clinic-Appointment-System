@@ -50,6 +50,8 @@ export interface Visit {
   isSigned: boolean
   signedAt: string | null
   prescriptions: Prescription[]
+  doctorName?: string
+  patientName?: string
   createdAt: string
   updatedAt: string
 }

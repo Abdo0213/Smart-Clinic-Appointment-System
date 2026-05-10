@@ -52,8 +52,17 @@ export const visitApi = {
     return data
   },
 
-  async getPrescriptionPdfUrl(visitId: string): Promise<{ url: string }> {
-    const { data } = await apiClient.get<{ url: string }>(API_ROUTES.VISITS.PRESCRIPTION_PDF(visitId))
+  async getPrescriptionPdfUrl(visitId: string, prescriptionId: string): Promise<{ downloadUrl: string }> {
+    const { data } = await apiClient.get<{ downloadUrl: string }>(
+      API_ROUTES.VISITS.PRESCRIPTION_PDF(visitId, prescriptionId)
+    )
+    return data
+  },
+  
+  async getAllPrescriptionsPdfUrl(visitId: string): Promise<{ downloadUrl: string }> {
+    const { data } = await apiClient.get<{ downloadUrl: string }>(
+      API_ROUTES.VISITS.ALL_PRESCRIPTIONS_PDF(visitId)
+    )
     return data
   },
 

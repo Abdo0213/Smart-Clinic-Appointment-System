@@ -21,5 +21,6 @@ public interface VisitService {
     
     java.util.List<PrescriptionResponse> getPrescriptionsForVisit(UUID visitId);
     PrescriptionPdfResponse getPrescriptionPdfUrl(UUID visitId, UUID prescriptionId);
+    PrescriptionPdfResponse getVisitPrescriptionsPdfUrl(UUID visitId);
     VisitResponse getVisitByAppointmentId(UUID appointmentId);
 }

@@ -11,6 +11,7 @@ import com.clinic.visit_service.mapper.VisitMapper;
 import com.clinic.visit_service.repository.PrescriptionRepository;
 import com.clinic.visit_service.repository.VisitRepository;
 import com.clinic.visit_service.service.VisitService;
+import com.clinic.visit_service.service.PdfService;
 import com.clinic.visit_service.exception.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -37,6 +39,7 @@ public class VisitServiceImpl implements VisitService {
     private final VisitMapper visitMapper;
     private final PrescriptionMapper prescriptionMapper;
     private final RestTemplate restTemplate;
+    private final PdfService pdfService;
 
     @Value("${services.appointment.url}")
     private String appointmentServiceUrl;
@@ -223,12 +226,18 @@ public class VisitServiceImpl implements VisitService {
                 .notes(request.getNotes())
                 .build();
 
-        // Placeholder for PDF generation and S3 upload
-        prescription.setPdfKey("prescriptions/" + UUID.randomUUID() + ".pdf");
+        // Fetch patient name for the PDF
+        String patientName = fetchPatientName(visit.getPatientId());
+
+        // Generate PDF and save the key (currently local filename)
+        String pdfKey = pdfService.generatePrescriptionPdf(visit, prescription, patientName);
+        prescription.setPdfKey(pdfKey);
 
         Prescription savedPrescription = prescriptionRepository.save(prescription);
         PrescriptionResponse response = prescriptionMapper.toResponse(savedPrescription);
-        response.setPdfDownloadUrl("https://dummy-s3-url.com/" + prescription.getPdfKey());
+        
+        // For testing, just return a local-friendly URL or dummy URL
+        response.setPdfDownloadUrl("/visits/prescriptions/download/" + pdfKey);
 
         return response;
     }
@@ -314,11 +323,45 @@ public class VisitServiceImpl implements VisitService {
             throw new ValidationException("Prescription does not belong to this visit");
         }
 
-        // Dummy pre-signed URL generation
+        // Return a local download URL
         return PrescriptionPdfResponse.builder()
-                .downloadUrl("https://dummy-s3-pre-signed-url.com/" + prescription.getPdfKey() + "?token="
-                        + UUID.randomUUID())
+                .downloadUrl("/api/visits/prescriptions/download/" + prescription.getPdfKey())
                 .expiresAt(LocalDateTime.now().plusHours(1))
                 .build();
+    }
+
+    @Override
+    public PrescriptionPdfResponse getVisitPrescriptionsPdfUrl(UUID visitId) {
+        Visit visit = visitRepository.findById(visitId)
+                .orElseThrow(() -> new ResourceNotFoundException("Visit not found"));
+
+        List<Prescription> prescriptions = prescriptionRepository.findByVisitId(visitId);
+        
+        // Fetch patient name
+        String patientName = fetchPatientName(visit.getPatientId());
+        
+        // Generate the combined PDF on the fly for testing
+        String pdfKey = pdfService.generateAllPrescriptionsPdf(visit, prescriptions, patientName);
+
+        return PrescriptionPdfResponse.builder()
+                .downloadUrl("/api/visits/prescriptions/download/" + pdfKey)
+                .expiresAt(LocalDateTime.now().plusHours(1))
+                .build();
+    }
+
+    private String fetchPatientName(UUID patientId) {
+        try {
+            // Patient Service is on port 8083 (Gateway uses /api/patients)
+            // But internal service-to-service calls often use direct URLs
+            String url = "http://localhost:8083/patients/" + patientId;
+            ResponseEntity<java.util.Map> response = restTemplate.getForEntity(url, java.util.Map.class);
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                java.util.Map patient = response.getBody();
+                return patient.get("firstName") + " " + patient.get("lastName");
+            }
+        } catch (Exception e) {
+            log.error("Failed to fetch patient name: {}", e.getMessage());
+        }
+        return "Patient ID: " + patientId.toString().substring(0, 8);
     }
 }

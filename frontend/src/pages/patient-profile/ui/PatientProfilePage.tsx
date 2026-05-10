@@ -4,12 +4,12 @@ import { useState } from "react"
 import { useParams } from "next/navigation"
 import { useGetPatient } from "@/entities/patient"
 import { useGetAppointments, AppointmentStatusBadge } from "@/entities/appointment"
-import { useGetVisits, VisitStatusBadge } from "@/entities/visit"
+import { PencilIcon, CalendarIcon, ActivityIcon, LockIcon, EyeIcon } from "lucide-react"
+import { VisitDetailsDialog, useGetVisits, VisitStatusBadge } from "@/entities/visit"
 import { LoadingSpinner } from "@/shared/ui/loading-spinner/loading-spinner"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { PencilIcon, CalendarIcon, ActivityIcon, LockIcon } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { UpdatePatientForm } from "@/features/patient/ui/UpdatePatientForm"
@@ -27,6 +27,8 @@ export default function PatientProfilePage() {
   const patientId = params.id as string
   const user = useAuthStore((s) => s.user)
   const [isUpdateOpen, setIsUpdateOpen] = useState(false)
+  const [selectedVisit, setSelectedVisit] = useState<Visit | null>(null)
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false)
 
   const { data: patient, isLoading, isError } = useGetPatient(patientId)
   const [appointmentsPage, setAppointmentsPage] = useState(0)
@@ -42,6 +44,11 @@ export default function PatientProfilePage() {
     page: visitsPage,
     size: 10,
   })
+
+  const handleViewVisit = (visit: Visit) => {
+    setSelectedVisit(visit)
+    setIsDetailsOpen(true)
+  }
 
   const appointmentColumns: ColumnDef<Appointment>[] = [
     {
@@ -81,6 +88,21 @@ export default function PatientProfilePage() {
       accessorKey: "isSigned",
       header: "Status",
       cell: ({ row }) => <VisitStatusBadge isSigned={row.original.isSigned} />,
+    },
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row }) => (
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => handleViewVisit(row.original)}
+          className="gap-2"
+        >
+          <EyeIcon className="size-4" />
+          View
+        </Button>
+      ),
     },
   ]
 
@@ -289,6 +311,11 @@ export default function PatientProfilePage() {
           </Card>
         </TabsContent>
       </Tabs>
+      <VisitDetailsDialog 
+        visit={selectedVisit} 
+        open={isDetailsOpen} 
+        onOpenChange={setIsDetailsOpen} 
+      />
     </div>
   )
 }

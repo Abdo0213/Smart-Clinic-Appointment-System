@@ -179,7 +179,6 @@ public class BillingServiceImpl implements BillingService {
     }
 
     @Override
-    @Transactional
     public InvoiceDTO waiveInvoice(UUID id, WaiveRequest request) {
         Invoice invoice = invoiceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Invoice not found with id: " + id));
@@ -193,6 +192,16 @@ public class BillingServiceImpl implements BillingService {
         // In a real app, you'd get the admin name from the security context
         invoice.setWaivedBy("ADMIN");
         InvoiceDTO response = mapToDTO(invoiceRepository.save(invoice));
+        populateDetails(response);
+        return response;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public InvoiceDTO getInvoiceByVisitId(UUID visitId) {
+        Invoice invoice = invoiceRepository.findByVisitId(visitId)
+                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found for visit id: " + visitId));
+        InvoiceDTO response = mapToDTO(invoice);
         populateDetails(response);
         return response;
     }

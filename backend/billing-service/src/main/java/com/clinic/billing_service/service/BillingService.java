@@ -15,4 +15,5 @@ public interface BillingService {
     InvoiceDTO updateLineItems(UUID id, UpdateLineItemsRequest request);
     InvoiceDTO markAsPaid(UUID id);
     InvoiceDTO waiveInvoice(UUID id, WaiveRequest request);
+    InvoiceDTO getInvoiceByVisitId(UUID visitId);
 }

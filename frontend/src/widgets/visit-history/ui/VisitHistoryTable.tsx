@@ -9,7 +9,9 @@ import { DataTable } from '@/shared/ui/data-table/data-table'
 import { LoadingSpinner } from '@/shared/ui/loading-spinner/loading-spinner'
 import { EmptyState } from '@/shared/ui/empty-state/empty-state'
 import { formatDate } from '@/shared/lib/formatDate'
-import { FileTextIcon, PillIcon } from 'lucide-react'
+import { FileTextIcon, PillIcon, EyeIcon } from 'lucide-react'
+import { VisitDetailsDialog } from '@/entities/visit'
+import { Button } from '@/components/ui/button'
 
 interface VisitHistoryTableProps {
   patientId?: string
@@ -19,6 +21,8 @@ interface VisitHistoryTableProps {
 export function VisitHistoryTable({ patientId, doctorId }: VisitHistoryTableProps) {
   const router = useRouter()
   const [page, setPage] = useState(0)
+  const [selectedVisit, setSelectedVisit] = useState<Visit | null>(null)
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false)
 
   const filters: VisitFilters = {
     patientId,
@@ -29,6 +33,11 @@ export function VisitHistoryTable({ patientId, doctorId }: VisitHistoryTableProp
 
   const { data, isLoading } = useGetVisits(filters)
   const visits = data?.content ?? []
+
+  const handleViewDetails = (visit: Visit) => {
+    setSelectedVisit(visit)
+    setIsDetailsOpen(true)
+  }
 
   const columns: ColumnDef<Visit>[] = [
     {
@@ -78,6 +87,21 @@ export function VisitHistoryTable({ patientId, doctorId }: VisitHistoryTableProp
       header: 'Date',
       cell: ({ row }) => formatDate(row.original.createdAt),
     },
+    {
+      id: 'actions',
+      header: '',
+      cell: ({ row }) => (
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => handleViewDetails(row.original)}
+          className="gap-2"
+        >
+          <EyeIcon className="size-4" />
+          View
+        </Button>
+      ),
+    },
   ]
 
   if (isLoading) {
@@ -99,15 +123,22 @@ export function VisitHistoryTable({ patientId, doctorId }: VisitHistoryTableProp
   }
 
   return (
-    <DataTable
-      columns={columns}
-      data={visits}
-      pagination={{
-        page: data?.number ?? 0,
-        pageSize: 10,
-        totalPages: data?.totalPages ?? 1,
-        onPageChange: setPage,
-      }}
-    />
+    <>
+      <DataTable
+        columns={columns}
+        data={visits}
+        pagination={{
+          page: data?.number ?? 0,
+          pageSize: 10,
+          totalPages: data?.totalPages ?? 1,
+          onPageChange: setPage,
+        }}
+      />
+      <VisitDetailsDialog 
+        visit={selectedVisit} 
+        open={isDetailsOpen} 
+        onOpenChange={setIsDetailsOpen} 
+      />
+    </>
   )
 }

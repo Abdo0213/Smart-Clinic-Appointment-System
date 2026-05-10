@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.UUID;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @RestController
 @RequestMapping("/visits")
@@ -92,6 +94,26 @@ public class VisitController {
             @PathVariable UUID id,
             @PathVariable UUID prescriptionId) {
         return ResponseEntity.ok(visitService.getPrescriptionPdfUrl(id, prescriptionId));
+    }
+
+    @GetMapping("/{id}/prescriptions/pdf")
+    public ResponseEntity<PrescriptionPdfResponse> getVisitPrescriptionsPdf(@PathVariable UUID id) {
+        return ResponseEntity.ok(visitService.getVisitPrescriptionsPdfUrl(id));
+    }
+
+    @GetMapping("/prescriptions/download/{fileName}")
+    public ResponseEntity<org.springframework.core.io.Resource> downloadPrescriptionPdf(@PathVariable String fileName) {
+        try {
+            Path path = Paths.get("storage/prescriptions", fileName);
+            org.springframework.core.io.Resource resource = new org.springframework.core.io.UrlResource(path.toUri());
+            
+            return ResponseEntity.ok()
+                    .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                    .contentType(org.springframework.http.MediaType.APPLICATION_PDF)
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/appointment/{appointmentId}")

@@ -17,7 +17,7 @@ export default function PatientInvoicesPage() {
     size: 20,
   })
 
-  const invoices = data?.data ?? []
+  const invoices = data?.content ?? []
 
   return (
     <div className="space-y-6">

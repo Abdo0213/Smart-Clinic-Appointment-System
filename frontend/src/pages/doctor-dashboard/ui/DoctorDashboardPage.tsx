@@ -10,7 +10,7 @@ import { EmptyState } from "@/shared/ui/empty-state/empty-state"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
-import { CalendarIcon, ClockIcon, UsersIcon, StethoscopeIcon } from "lucide-react"
+import { CalendarIcon, ClockIcon, UsersIcon, StethoscopeIcon, FileTextIcon } from "lucide-react"
 
 function getTodayISO() {
   return new Date().toISOString().split("T")[0]
@@ -49,7 +49,7 @@ export default function DoctorDashboardPage() {
         <p className="text-muted-foreground">Here&apos;s your dashboard for today.</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center gap-3 pb-2">
             <CalendarIcon className="size-5 text-primary" />
@@ -83,6 +83,19 @@ export default function DoctorDashboardPage() {
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">See today&apos;s patient queue</p>
+          </CardContent>
+        </Card>
+
+        <Card
+          className="cursor-pointer transition-shadow hover:shadow-md"
+          onClick={() => router.push(ROUTE_PATHS.DOCTOR_VISITS)}
+        >
+          <CardHeader className="flex flex-row items-center gap-3 pb-2">
+            <FileTextIcon className="size-5 text-primary" />
+            <CardTitle className="text-sm font-medium">Visit History</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-muted-foreground">Search and view past records</p>
           </CardContent>
         </Card>
 
