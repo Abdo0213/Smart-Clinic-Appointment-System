@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class BillingServiceApplication {
 
 	public static void main(String[] args) {
+		DotenvLoader.load();
 		SpringApplication.run(BillingServiceApplication.class, args);
 	}
 

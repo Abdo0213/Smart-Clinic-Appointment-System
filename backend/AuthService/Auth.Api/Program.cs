@@ -17,8 +17,11 @@ namespace Auth.Api
     {
         public static async Task Main(string[] args)
         {
-            var root = Directory.GetCurrentDirectory();
-            var dotenv = Path.Combine(root, ".env");
+            var dotenv = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+            if (!File.Exists(dotenv))
+            {
+                dotenv = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".env");
+            }
             LoadEnv(dotenv);
 
             var builder = WebApplication.CreateBuilder(args);
@@ -100,6 +103,11 @@ namespace Auth.Api
             var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY") ?? builder.Configuration["Jwt:Key"];
             var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? builder.Configuration["Jwt:Issuer"];
             var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? builder.Configuration["Jwt:Audience"];
+
+            // Explicitly set in configuration so services like AuthService can find them
+            builder.Configuration["Jwt:Key"] = jwtKey;
+            builder.Configuration["Jwt:Issuer"] = jwtIssuer;
+            builder.Configuration["Jwt:Audience"] = jwtAudience;
 
             if (string.IsNullOrWhiteSpace(jwtKey) ||
                 string.IsNullOrWhiteSpace(jwtIssuer) ||

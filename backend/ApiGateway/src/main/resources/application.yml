@@ -108,4 +108,4 @@ spring:
                 roles: Admin,Doctor,Receptionist,Patient
 
 jwt:
-  secret: YourSuperSecretKeyHere12345-MustBeLongerThan32Chars
+  secret: ${JWT_KEY}

@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class ApiGatewayApplication {
 
 	public static void main(String[] args) {
+		DotenvLoader.load();
 		SpringApplication.run(ApiGatewayApplication.class, args);
 	}
 

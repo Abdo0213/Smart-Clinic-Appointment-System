@@ -7,12 +7,23 @@ using Amazon.Runtime;
 using Microsoft.EntityFrameworkCore;
 using System.IO;
 
-var root = Directory.GetCurrentDirectory();
-var dotenv = Path.Combine(root, ".env");
+var dotenv = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+if (!File.Exists(dotenv))
+{
+    dotenv = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".env");
+}
 LoadEnv(dotenv);
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
+
+// Map AWS Environment Variables
+if (Environment.GetEnvironmentVariable("AWS_ACCESS_KEY") != null)
+{
+    builder.Configuration["AWS:AccessKey"] = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY");
+    builder.Configuration["AWS:SecretKey"] = Environment.GetEnvironmentVariable("AWS_SECRET_KEY");
+    builder.Configuration["AWS:Region"] = Environment.GetEnvironmentVariable("AWS_REGION");
+}
 
 // Add services to the container.
 builder.Services.AddControllers();
