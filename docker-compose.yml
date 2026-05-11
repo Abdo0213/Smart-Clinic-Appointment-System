@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  api-gateway:
+    build:
+      context: ./backend/ApiGateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - auth-api
+      - appointment-service
+      - notification-service
+    networks:
+      - clinic-network
+
+  auth-api:
+    build:
+      context: ./backend
+      dockerfile: AuthService/Auth.Api/Dockerfile
+    ports:
+      - "5005:5005"
+    networks:
+      - clinic-network
+
+  admin-api:
+    build:
+      context: ./backend
+      dockerfile: AdminService/Admin.Api/Dockerfile
+    ports:
+      - "8088:8088"
+    networks:
+      - clinic-network
+
+  appointment-service:
+    build:
+      context: ./backend/appointment-service
+    ports:
+      - "8084:8084"
+    networks:
+      - clinic-network
+
+  billing-service:
+    build:
+      context: ./backend/billing-service
+    ports:
+      - "8087:8087"
+    networks:
+      - clinic-network
+
+  doctor-service:
+    build:
+      context: ./backend/doctor-service
+    ports:
+      - "8082:8082"
+    networks:
+      - clinic-network
+
+  notification-service:
+    build:
+      context: ./backend/notification-service
+    ports:
+      - "8089:8089"
+    networks:
+      - clinic-network
+
+  patient-service:
+    build:
+      context: ./backend/patient_service
+    ports:
+      - "8083:8083"
+    networks:
+      - clinic-network
+
+  visit-service:
+    build:
+      context: ./backend/visit-service
+    ports:
+      - "8085:8085"
+    networks:
+      - clinic-network
+
+networks:
+  clinic-network:
+    driver: bridge

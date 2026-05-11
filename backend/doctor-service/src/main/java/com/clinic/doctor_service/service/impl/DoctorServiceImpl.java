@@ -151,9 +151,13 @@ public class DoctorServiceImpl implements DoctorService {
 
         List<SlotDTO> slots = new ArrayList<>();
         for (Schedule schedule : schedules) {
+            int duration = schedule.getSlotDuration();
+            if (duration <= 0) continue; // Safety check
+
             LocalTime current = schedule.getStartTime();
-            while (current.plusMinutes(schedule.getSlotDuration()).isBefore(schedule.getEndTime()) ||
-                    current.plusMinutes(schedule.getSlotDuration()).equals(schedule.getEndTime())) {
+            int safetyCounter = 0;
+            while (safetyCounter++ < 500 && (current.plusMinutes(duration).isBefore(schedule.getEndTime()) ||
+                    current.plusMinutes(duration).equals(schedule.getEndTime()))) {
 
                 LocalTime end = current.plusMinutes(schedule.getSlotDuration());
                 boolean isBreak = isDuringBreak(current, end, schedule.getBreaks());
