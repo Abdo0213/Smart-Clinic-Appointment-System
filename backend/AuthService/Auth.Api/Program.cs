@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Text;
+using System.IO;
 
 namespace Auth.Api
 {
@@ -16,7 +17,12 @@ namespace Auth.Api
     {
         public static async Task Main(string[] args)
         {
+            var root = Directory.GetCurrentDirectory();
+            var dotenv = Path.Combine(root, ".env");
+            LoadEnv(dotenv);
+
             var builder = WebApplication.CreateBuilder(args);
+            builder.Configuration.AddEnvironmentVariables();
 
             builder.Services.AddControllers();
             builder.Services.AddHttpClient();
@@ -91,15 +97,15 @@ namespace Auth.Api
             })
                 .AddEntityFrameworkStores<AppDbContext>();
 
-            var jwtKey = builder.Configuration["Jwt:Key"];
-            var jwtIssuer = builder.Configuration["Jwt:Issuer"];
-            var jwtAudience = builder.Configuration["Jwt:Audience"];
+            var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY") ?? builder.Configuration["Jwt:Key"];
+            var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? builder.Configuration["Jwt:Issuer"];
+            var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? builder.Configuration["Jwt:Audience"];
 
             if (string.IsNullOrWhiteSpace(jwtKey) ||
                 string.IsNullOrWhiteSpace(jwtIssuer) ||
                 string.IsNullOrWhiteSpace(jwtAudience))
             {
-                throw new InvalidOperationException("JWT settings are missing. Configure Jwt:Key, Jwt:Issuer, and Jwt:Audience.");
+                throw new InvalidOperationException("JWT settings are missing. Configure JWT_KEY, JWT_ISSUER, and JWT_AUDIENCE in .env or Jwt:Key, Jwt:Issuer, and Jwt:Audience in appsettings.json.");
             }
 
             builder.Services.AddAuthentication(options =>
@@ -161,8 +167,8 @@ namespace Auth.Api
             var configuration = serviceProvider.GetRequiredService<IConfiguration>();
             var seedSection = configuration.GetSection("SeedAdmin");
 
-            var email = seedSection["Email"];
-            var password = seedSection["Password"];
+            var email = Environment.GetEnvironmentVariable("SEED_ADMIN_EMAIL") ?? seedSection["Email"];
+            var password = Environment.GetEnvironmentVariable("SEED_ADMIN_PASSWORD") ?? seedSection["Password"];
 
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
             {
@@ -199,6 +205,26 @@ namespace Auth.Api
             if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
             {
                 await userManager.AddToRoleAsync(adminUser, "Admin");
+            }
+        }
+        private static void LoadEnv(string filePath)
+        {
+            if (!File.Exists(filePath)) return;
+
+            foreach (var line in File.ReadAllLines(filePath))
+            {
+                if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#")) continue;
+
+                var parts = line.Split('=', 2);
+                if (parts.Length != 2) continue;
+
+                var key = parts[0].Trim();
+                var value = parts[1].Trim();
+
+                if (value.StartsWith("\"") && value.EndsWith("\""))
+                    value = value.Substring(1, value.Length - 2);
+
+                Environment.SetEnvironmentVariable(key, value);
             }
         }
     }

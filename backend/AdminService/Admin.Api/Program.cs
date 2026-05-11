@@ -5,8 +5,14 @@ using Admin.Infrastructure.Services;
 using Amazon.S3;
 using Amazon.Runtime;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
+
+var root = Directory.GetCurrentDirectory();
+var dotenv = Path.Combine(root, ".env");
+LoadEnv(dotenv);
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddEnvironmentVariables();
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -95,3 +101,24 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+void LoadEnv(string filePath)
+{
+    if (!File.Exists(filePath)) return;
+
+    foreach (var line in File.ReadAllLines(filePath))
+    {
+        if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#")) continue;
+
+        var parts = line.Split('=', 2);
+        if (parts.Length != 2) continue;
+
+        var key = parts[0].Trim();
+        var value = parts[1].Trim();
+
+        if (value.StartsWith("\"") && value.EndsWith("\""))
+            value = value.Substring(1, value.Length - 2);
+
+        Environment.SetEnvironmentVariable(key, value);
+    }
+}
