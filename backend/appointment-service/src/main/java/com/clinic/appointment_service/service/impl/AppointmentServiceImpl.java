@@ -36,12 +36,16 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final AppointmentMapper appointmentMapper;
     private final RestTemplate restTemplate;
     private final com.clinic.appointment_service.service.AwsNotificationService awsNotificationService;
+    private final com.clinic.appointment_service.service.SchedulerService schedulerService;
 
     @Value("${services.doctor.url}")
     private String doctorServiceUrl;
 
     @Value("${services.patient.url}")
     private String patientServiceUrl;
+
+    @Value("${services.auth.url}")
+    private String authServiceUrl;
 
     @Override
     @Transactional
@@ -127,9 +131,21 @@ public class AppointmentServiceImpl implements AppointmentService {
 
             Appointment saved = appointmentRepository.save(appointment);
             
-            // 6. Trigger Notification
-            String doctorName = "Dr. " + doctor.getFirstName() + " " + doctor.getLastName();
-            awsNotificationService.publishAppointmentBooked(saved, patient.getEmail(), patient.getUserId(), doctorName);
+            // 6. Trigger Notification (SNS Disabled as per request)
+            // String doctorName = "Dr. " + doctor.getFirstName() + " " + doctor.getLastName();
+            // awsNotificationService.publishAppointmentBooked(saved, patient.getEmail(), patient.getUserId(), doctorName);
+
+            // 7. Schedule Reminders
+            LocalDateTime appointmentTime = LocalDateTime.of(saved.getSlotDate(), saved.getSlotStart());
+            String email = patient.getEmail();
+            if (email == null || email.isBlank()) {
+                email = fetchEmailFromAuth(patient.getUserId());
+            }
+
+            System.out.println("DEBUG: Calling SchedulerService for appointment " + saved.getId() + " with email " + email);
+            log.info("Initiating reminder scheduling for appointment: {}", saved.getId());
+            schedulerService.createReminderSchedules(saved.getId(), patient.getUserId(), email, appointmentTime);
+            log.info("Successfully requested reminder schedules for appointment: {}", saved.getId());
 
             AppointmentResponseDTO response = appointmentMapper.toResponseDto(saved);
             populateNames(response);
@@ -235,6 +251,10 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setCancellationReason(cancellationRequest.getReason());
 
         Appointment updated = appointmentRepository.save(appointment);
+        
+        // Delete reminders if cancelled
+        schedulerService.deleteReminderSchedules(updated.getId());
+
         AppointmentResponseDTO response = appointmentMapper.toResponseDto(updated);
         populateNames(response);
         return response;
@@ -299,6 +319,27 @@ public class AppointmentServiceImpl implements AppointmentService {
             appointment.setPrice(matchedSlot.getPrice());
 
             Appointment saved = appointmentRepository.save(appointment);
+
+            // Re-create reminders for new time
+            log.info("Updating reminder schedules for rescheduled appointment: {}", saved.getId());
+            schedulerService.deleteReminderSchedules(saved.getId());
+            LocalDateTime newAppointmentTime = LocalDateTime.of(saved.getSlotDate(), saved.getSlotStart());
+            // We need patient info for reminders. In a real app we'd fetch it again or have it in the entity.
+            // For now, we'll try to get it from the appointment if it was stored, or fetch it.
+            // Assuming we fetch it here like in bookAppointment:
+            try {
+                PatientDTO patient = restTemplate.getForObject(patientServiceUrl + "/" + saved.getPatientId(), PatientDTO.class);
+                if (patient != null) {
+                    String email = patient.getEmail();
+                    if (email == null || email.isBlank()) {
+                        email = fetchEmailFromAuth(patient.getUserId());
+                    }
+                    schedulerService.createReminderSchedules(saved.getId(), patient.getUserId(), email, newAppointmentTime);
+                }
+            } catch (Exception e) {
+                log.warn("Could not re-schedule reminders for appointment {}: {}", saved.getId(), e.getMessage());
+            }
+
             AppointmentResponseDTO response = appointmentMapper.toResponseDto(saved);
             populateNames(response);
             return response;
@@ -316,5 +357,18 @@ public class AppointmentServiceImpl implements AppointmentService {
         return entries.stream()
                 .map(appointmentMapper::toResponseDto)
                 .collect(java.util.stream.Collectors.toList());
+    }
+
+    private String fetchEmailFromAuth(UUID userId) {
+        if (userId == null) return null;
+        try {
+            log.info("Fetching email from Auth Service for userId: {}", userId);
+            com.clinic.appointment_service.dto.external.UserDTO user = restTemplate.getForObject(
+                    authServiceUrl + "/" + userId, com.clinic.appointment_service.dto.external.UserDTO.class);
+            return user != null ? user.getEmail() : null;
+        } catch (Exception e) {
+            log.error("Failed to fetch email from Auth Service: {}", e.getMessage());
+            return null;
+        }
     }
 }

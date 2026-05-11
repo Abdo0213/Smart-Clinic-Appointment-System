@@ -29,10 +29,15 @@ public class NotificationService {
 
     @Transactional
     public void markAsRead(String id) {
-        repository.findById(id).ifPresent(n -> {
-            n.setRead(true);
-            repository.save(n);
-        });
+        try {
+            Long longId = Long.parseLong(id);
+            repository.findById(longId).ifPresent(n -> {
+                n.setRead(true);
+                repository.save(n);
+            });
+        } catch (NumberFormatException e) {
+            // Log or ignore invalid ID formats
+        }
     }
 
     @Transactional

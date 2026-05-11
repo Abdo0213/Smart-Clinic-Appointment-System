@@ -71,7 +71,7 @@ export function useMarkAsRead() {
       queryClient.setQueriesData<PaginatedNotifications>(
         { queryKey: notificationKeys.all },
         (old) => {
-          if (!old) return old
+          if (!old || !old.content) return old
           return {
             ...old,
             content: old.content.map((n) =>
@@ -133,7 +133,7 @@ export function useMarkAllRead() {
       queryClient.setQueriesData<PaginatedNotifications>(
         { queryKey: notificationKeys.all },
         (old) => {
-          if (!old) return old
+          if (!old || !old.content) return old
           return {
             ...old,
             content: old.content.map((n) => ({ ...n, isRead: true })),

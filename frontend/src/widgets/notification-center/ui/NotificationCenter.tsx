@@ -25,6 +25,7 @@ export function NotificationCenter() {
 
   const handleMarkAsRead = (id: string) => {
     markAsRead.mutate(id, {
+      onSuccess: () => toast.success('Marked as read'),
       onError: () => toast.error('Failed to mark notification as read'),
     })
   }
@@ -56,9 +57,9 @@ export function NotificationCenter() {
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col max-h-[500px]">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3">
+      <div className="flex items-center justify-between px-4 py-3 shrink-0">
         <h3 className="text-sm font-semibold">Notifications</h3>
         {unreadCount > 0 && (
           <Button
@@ -78,14 +79,14 @@ export function NotificationCenter() {
         )}
       </div>
 
-      <Separator />
+      <Separator className="shrink-0" />
 
       {/* Notification list */}
       {notifications.length === 0 ? (
         <NotificationEmptyState />
       ) : (
-        <ScrollArea className="max-h-[400px]">
-          <div role="list" aria-label="Notifications">
+        <ScrollArea className="flex-1 overflow-y-auto">
+          <div role="list" aria-label="Notifications" className="flex flex-col">
             {notifications.map((notification) => (
               <div key={notification.id}>
                 <NotificationItem
