@@ -71,3 +71,29 @@ public class PeriodDto
     public string From { get; set; } = string.Empty;
     public string To { get; set; } = string.Empty;
 }
+
+public class SummaryReportResponse
+{
+    public SummaryAppointmentsSection Appointments { get; set; } = new();
+    public SummaryRevenueSection Revenue { get; set; } = new();
+    public SummaryStaffSection Staff { get; set; } = new();
+}
+
+public class SummaryAppointmentsSection
+{
+    public int Total { get; set; }
+    public int Confirmed { get; set; }
+    public int Pending { get; set; }
+}
+
+public class SummaryRevenueSection
+{
+    public decimal TotalBilled { get; set; }
+    public decimal PendingCollected { get; set; }
+}
+
+public class SummaryStaffSection
+{
+    public int ActiveDoctors { get; set; }
+    public int TotalDoctors { get; set; }
+}

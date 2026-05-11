@@ -8,7 +8,7 @@ namespace Admin.Infrastructure.Services;
 public class S3ReportStorageService : IReportStorageService
 {
     private readonly IAmazonS3 _s3Client;
-    private readonly string _bucketName = "clinic-reports";
+    private readonly string _bucketName = "clinic-fiels-pdf-123";
 
     public S3ReportStorageService(IAmazonS3 s3Client)
     {

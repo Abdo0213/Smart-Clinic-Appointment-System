@@ -26,19 +26,20 @@ export function ExportButton({
     if (from) params.set("from", from);
     if (to) params.set("to", to);
 
-    const response = await apiClient.get(`/admin/reports/export?${params.toString()}`, {
-      responseType: "blob",
-    });
-
-    const blob = new Blob([response.data], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = fileName || `${reportType}-report.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+    try {
+      const response = await apiClient.get<{ downloadUrl: string }>(
+        `/admin/reports/export?${params.toString()}`
+      );
+      
+      if (response.data?.downloadUrl) {
+        // Open the S3 presigned URL in a new tab to trigger download
+        window.open(response.data.downloadUrl, "_blank");
+      } else {
+        console.error("No download URL received");
+      }
+    } catch (error) {
+      console.error("Failed to export report:", error);
+    }
   };
 
   return (

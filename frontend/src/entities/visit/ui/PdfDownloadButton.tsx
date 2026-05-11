@@ -18,8 +18,10 @@ export function PdfDownloadButton({ visitId, disabled }: PdfDownloadButtonProps)
   const handleDownload = async () => {
     setIsLoading(true)
     try {
-      const { url } = await visitApi.getPrescriptionPdfUrl(visitId)
-      window.open(url, '_blank')
+      const { downloadUrl } = await visitApi.getAllPrescriptionsPdfUrl(visitId)
+      if (downloadUrl) {
+        window.open(downloadUrl, '_blank')
+      }
     } catch {
       toast.error('Failed to download prescription PDF')
     } finally {

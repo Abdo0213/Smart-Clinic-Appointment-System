@@ -187,8 +187,9 @@ export default function ReportsPage() {
 
           <TabsContent value="appointments" className="space-y-4">
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <CardTitle className="text-base">Appointments Overview</CardTitle>
+                <ExportButton reportType="appointments" from={from} to={to} label="Export PDF" />
               </CardHeader>
               <CardContent>
                 {appointmentsLoading ? (
@@ -218,8 +219,9 @@ export default function ReportsPage() {
 
           <TabsContent value="revenue" className="space-y-4">
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <CardTitle className="text-base">Revenue Trend</CardTitle>
+                <ExportButton reportType="revenue" from={from} to={to} label="Export PDF" />
               </CardHeader>
               <CardContent>
                 {revenueLoading ? (
@@ -248,8 +250,9 @@ export default function ReportsPage() {
 
           <TabsContent value="visits" className="space-y-4">
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <CardTitle className="text-base">Visits Overview</CardTitle>
+                <ExportButton reportType="visits" from={from} to={to} label="Export PDF" />
               </CardHeader>
               <CardContent>
                 {visitsLoading ? (
@@ -272,8 +275,9 @@ export default function ReportsPage() {
 
           <TabsContent value="doctors" className="space-y-4">
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <CardTitle className="text-base">Doctor Utilization</CardTitle>
+                <ExportButton reportType="doctors" from={from} to={to} label="Export PDF" />
               </CardHeader>
               <CardContent>
                 {doctorsLoading ? (
@@ -301,8 +305,9 @@ export default function ReportsPage() {
 
           <TabsContent value="patients" className="space-y-4">
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <CardTitle className="text-base">Patient Statistics</CardTitle>
+                <ExportButton reportType="patients" from={from} to={to} label="Export PDF" />
               </CardHeader>
               <CardContent>
                 {patientsLoading ? (

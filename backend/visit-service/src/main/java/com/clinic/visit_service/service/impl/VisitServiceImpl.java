@@ -236,8 +236,12 @@ public class VisitServiceImpl implements VisitService {
         Prescription savedPrescription = prescriptionRepository.save(prescription);
         PrescriptionResponse response = prescriptionMapper.toResponse(savedPrescription);
         
-        // For testing, just return a local-friendly URL or dummy URL
-        response.setPdfDownloadUrl("/visits/prescriptions/download/" + pdfKey);
+        // If it's a full URL (S3 presigned), return it directly. Otherwise use local path.
+        if (pdfKey != null && pdfKey.startsWith("http")) {
+            response.setPdfDownloadUrl(pdfKey);
+        } else {
+            response.setPdfDownloadUrl("/visits/prescriptions/download/" + pdfKey);
+        }
 
         return response;
     }
@@ -323,9 +327,13 @@ public class VisitServiceImpl implements VisitService {
             throw new ValidationException("Prescription does not belong to this visit");
         }
 
-        // Return a local download URL
+        String url = prescription.getPdfKey();
+        if (url != null && !url.startsWith("http")) {
+            url = "/api/visits/prescriptions/download/" + url;
+        }
+
         return PrescriptionPdfResponse.builder()
-                .downloadUrl("/api/visits/prescriptions/download/" + prescription.getPdfKey())
+                .downloadUrl(url)
                 .expiresAt(LocalDateTime.now().plusHours(1))
                 .build();
     }
@@ -343,8 +351,13 @@ public class VisitServiceImpl implements VisitService {
         // Generate the combined PDF on the fly for testing
         String pdfKey = pdfService.generateAllPrescriptionsPdf(visit, prescriptions, patientName);
 
+        String url = pdfKey;
+        if (url != null && !url.startsWith("http")) {
+            url = "/api/visits/prescriptions/download/" + url;
+        }
+
         return PrescriptionPdfResponse.builder()
-                .downloadUrl("/api/visits/prescriptions/download/" + pdfKey)
+                .downloadUrl(url)
                 .expiresAt(LocalDateTime.now().plusHours(1))
                 .build();
     }

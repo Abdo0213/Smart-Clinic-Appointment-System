@@ -187,4 +187,57 @@ public class PdfService : IPdfService
             });
         }).GeneratePdf();
     }
+    
+    public byte[] GenerateSummaryReport(SummaryReportResponse data)
+    {
+        return Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4);
+                page.Margin(1, Unit.Centimetre);
+                page.PageColor(Colors.White);
+                page.DefaultTextStyle(x => x.FontSize(12).FontFamily(Fonts.Verdana));
+
+                page.Header().Text("Smart Clinic - Executive Summary").FontSize(24).SemiBold().FontColor(Colors.Blue.Medium);
+
+                page.Content().PaddingVertical(1, Unit.Centimetre).Column(col =>
+                {
+                    col.Spacing(20);
+
+                    // Appointments Section
+                    col.Item().Column(section =>
+                    {
+                        section.Item().Text("Appointments Summary").FontSize(16).SemiBold().FontColor(Colors.Grey.Darken3);
+                        section.Item().PaddingTop(5).Row(row =>
+                        {
+                            row.RelativeItem().Text($"Total: {data.Appointments.Total}");
+                            row.RelativeItem().Text($"Confirmed: {data.Appointments.Confirmed}");
+                            row.RelativeItem().Text($"Pending: {data.Appointments.Pending}");
+                        });
+                    });
+
+                    // Revenue Section
+                    col.Item().Column(section =>
+                    {
+                        section.Item().Text("Revenue Summary").FontSize(16).SemiBold().FontColor(Colors.Grey.Darken3);
+                        section.Item().PaddingTop(5).Row(row =>
+                        {
+                            row.RelativeItem().Text($"Total Billed: ${data.Revenue.TotalBilled:N2}");
+                            row.RelativeItem().Text($"Pending Collection: ${data.Revenue.PendingCollected:N2}");
+                        });
+                    });
+
+                    // Staff Section
+                    col.Item().Column(section =>
+                    {
+                        section.Item().Text("Staff Summary").FontSize(16).SemiBold().FontColor(Colors.Grey.Darken3);
+                        section.Item().PaddingTop(5).Text($"Active Doctors: {data.Staff.ActiveDoctors} / {data.Staff.TotalDoctors}");
+                    });
+                    
+                    col.Item().PaddingTop(50).Text($"Generated on: {DateTime.Now:f}").FontSize(10).Italic().FontColor(Colors.Grey.Medium);
+                });
+            });
+        }).GeneratePdf();
+    }
 }

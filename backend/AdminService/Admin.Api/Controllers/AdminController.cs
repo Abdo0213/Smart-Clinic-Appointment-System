@@ -414,6 +414,42 @@ public class AdminController : ControllerBase
             var logs = await _dbContext.AuditLogs.OrderByDescending(a => a.OccurredAt).ToListAsync();
             pdfContent = _pdfService.GenerateAuditLogReport(logs);
         }
+        else if (reportType == "all")
+        {
+            // 1. Get appointments in range
+            var appointmentsResponse = await _appointmentApiClient.GetAppointmentsAsync(dateFrom, dateTo, null);
+            var appointments = appointmentsResponse?.Content ?? new List<AppointmentDto>();
+
+            // 2. Get pending invoices
+            var billingResponse = await _billingApiClient.GetInvoicesAsync(dateFrom, dateTo);
+            var invoices = billingResponse?.Content ?? new List<InvoiceDto>();
+
+            // 3. Get doctor status
+            var doctorsResponse = await _doctorApiClient.GetDoctorsAsync(null);
+            var doctors = doctorsResponse?.Content ?? new List<DoctorDto>();
+
+            var summaryData = new SummaryReportResponse
+            {
+                Appointments = new SummaryAppointmentsSection
+                {
+                    Total = appointments.Count,
+                    Confirmed = appointments.Count(a => string.Equals(a.Status, "CONFIRMED", StringComparison.OrdinalIgnoreCase)),
+                    Pending = appointments.Count(a => string.Equals(a.Status, "REQUESTED", StringComparison.OrdinalIgnoreCase))
+                },
+                Revenue = new SummaryRevenueSection
+                {
+                    TotalBilled = invoices.Sum(i => i.TotalAmount),
+                    PendingCollected = invoices.Where(i => string.Equals(i.Status, "PENDING", StringComparison.OrdinalIgnoreCase)).Sum(i => i.TotalAmount)
+                },
+                Staff = new SummaryStaffSection
+                {
+                    ActiveDoctors = doctors.Count(d => d.IsActive),
+                    TotalDoctors = doctors.Count
+                }
+            };
+
+            pdfContent = _pdfService.GenerateSummaryReport(summaryData);
+        }
         else
         {
             return BadRequest(new { message = $"PDF export for '{reportType}' is not yet implemented." });

@@ -3,6 +3,7 @@ using Admin.Application.Interfaces;
 using Admin.Infrastructure.HttpClients;
 using Admin.Infrastructure.Services;
 using Amazon.S3;
+using Amazon.Runtime;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -59,6 +60,9 @@ if (storageType.Equals("S3", StringComparison.OrdinalIgnoreCase))
     if (!string.IsNullOrEmpty(accessKey) && accessKey != "YOUR_ACCESS_KEY" && 
         !string.IsNullOrEmpty(secretKey) && secretKey != "YOUR_SECRET_KEY")
     {
+        var options = builder.Configuration.GetAWSOptions();
+        options.Credentials = new Amazon.Runtime.BasicAWSCredentials(accessKey, secretKey);
+        builder.Services.AddDefaultAWSOptions(options);
         builder.Services.AddAWSService<IAmazonS3>();
     }
     else
