@@ -55,14 +55,16 @@ public class AppointmentServiceImpl implements AppointmentService {
             throw new ValidationException("Slot start time must be before end time.");
         }
 
-        log.debug("Booking attempt: Doctor {}, Date {}, Slot {} - {}", 
-            request.getDoctorId(), request.getSlotDate(), request.getSlotStart(), request.getSlotEnd());
+        log.debug("Booking attempt: Doctor {}, Date {}, Slot {} - {}",
+                request.getDoctorId(), request.getSlotDate(), request.getSlotStart(), request.getSlotEnd());
 
         // 1. Check if Doctor exists in Doctor Service
         com.clinic.appointment_service.dto.external.DoctorDTO doctor;
         try {
-            doctor = restTemplate.getForObject(doctorServiceUrl + "/" + request.getDoctorId(), com.clinic.appointment_service.dto.external.DoctorDTO.class);
-            if (doctor == null) throw new ResourceNotFoundException("Doctor not found.");
+            doctor = restTemplate.getForObject(doctorServiceUrl + "/" + request.getDoctorId(),
+                    com.clinic.appointment_service.dto.external.DoctorDTO.class);
+            if (doctor == null)
+                throw new ResourceNotFoundException("Doctor not found.");
         } catch (Exception e) {
             log.error("Doctor Service error: {}", e.getMessage());
             throw new ResourceNotFoundException("Doctor not found in Doctor Service.");
@@ -71,8 +73,10 @@ public class AppointmentServiceImpl implements AppointmentService {
         // 1.1 Check if Patient exists in Patient Service
         com.clinic.appointment_service.dto.external.PatientDTO patient;
         try {
-            patient = restTemplate.getForObject(patientServiceUrl + "/" + request.getPatientId(), com.clinic.appointment_service.dto.external.PatientDTO.class);
-            if (patient == null) throw new ResourceNotFoundException("Patient not found.");
+            patient = restTemplate.getForObject(patientServiceUrl + "/" + request.getPatientId(),
+                    com.clinic.appointment_service.dto.external.PatientDTO.class);
+            if (patient == null)
+                throw new ResourceNotFoundException("Patient not found.");
         } catch (Exception e) {
             log.error("Patient Service error: {}", e.getMessage());
             throw new ResourceNotFoundException("Patient not found in Patient Service.");
@@ -85,24 +89,27 @@ public class AppointmentServiceImpl implements AppointmentService {
                     .getForObject(slotsUrl, com.clinic.appointment_service.dto.external.AvailabilityResponseDTO.class);
 
             // The Doctor service returns slots with format HH:mm:ss (e.g. 10:00:00)
-            String requestedStart = request.getSlotStart().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+            String requestedStart = request.getSlotStart()
+                    .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
             String requestedEnd = request.getSlotEnd().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
 
             // Find the matching slot
-            com.clinic.appointment_service.dto.external.AvailabilityResponseDTO.SlotDTO matchedSlot = availability.getSlots().stream()
-                    .filter(slot -> 
-                        (slot.getStart().startsWith(requestedStart)) && 
-                        (slot.getEnd().startsWith(requestedEnd)))
+            com.clinic.appointment_service.dto.external.AvailabilityResponseDTO.SlotDTO matchedSlot = availability
+                    .getSlots().stream()
+                    .filter(slot -> (slot.getStart().startsWith(requestedStart)) &&
+                            (slot.getEnd().startsWith(requestedEnd)))
                     .findFirst()
                     .orElse(null);
 
             if (matchedSlot == null) {
-                throw new ValidationException("The requested slot " + requestedStart + "-" + requestedEnd + " does not exist in the doctor's schedule.");
+                throw new ValidationException("The requested slot " + requestedStart + "-" + requestedEnd
+                        + " does not exist in the doctor's schedule.");
             }
 
             if (!matchedSlot.isAvailable()) {
                 String reason = matchedSlot.getReason() != null ? matchedSlot.getReason().toLowerCase() : "unavailable";
-                throw new ValidationException("The requested slot " + requestedStart + "-" + requestedEnd + " is not available because it is a " + reason + ".");
+                throw new ValidationException("The requested slot " + requestedStart + "-" + requestedEnd
+                        + " is not available because it is a " + reason + ".");
             }
 
             Appointment appointment = appointmentMapper.toEntity(request);
@@ -124,13 +131,14 @@ public class AppointmentServiceImpl implements AppointmentService {
 
             // 5. Check if patient already has an appointment with this doctor on this day
             if (appointmentRepository.existsByPatientIdAndDoctorIdAndSlotDateAndStatusNot(
-                    request.getPatientId(), request.getDoctorId(), request.getSlotDate(), AppointmentStatus.CANCELLED)) {
+                    request.getPatientId(), request.getDoctorId(), request.getSlotDate(),
+                    AppointmentStatus.CANCELLED)) {
                 throw new ValidationException("Patient already has an appointment with this doctor on this day.");
             }
 
             Appointment saved = appointmentRepository.save(appointment);
             log.info("Appointment {} saved successfully to database. Proceeding to schedule reminders.", saved.getId());
-            
+
             // 6. Schedule Reminders (EventBridge Scheduler -> SQS)
             LocalDateTime appointmentTime = LocalDateTime.of(saved.getSlotDate(), saved.getSlotStart());
             String email = patient.getEmail();
@@ -138,13 +146,11 @@ public class AppointmentServiceImpl implements AppointmentService {
                 email = fetchEmailFromAuth(patient.getUserId());
             }
 
-            try {
-                log.info("Creating reminder schedules for appointment {} with email {}", saved.getId(), email);
-                schedulerService.createReminderSchedules(saved.getId(), patient.getUserId(), email, appointmentTime);
-            } catch (Exception e) {
-                // We log the error but don't fail the appointment creation if the scheduler fails
-                log.error("Failed to create reminder schedules for appointment {}: {}", saved.getId(), e.getMessage());
-            }
+            System.out.println(
+                    "DEBUG: Calling SchedulerService for appointment " + saved.getId() + " with email " + email);
+            log.info("Initiating reminder scheduling for appointment: {}", saved.getId());
+            schedulerService.createReminderSchedules(saved.getId(), patient.getUserId(), email, appointmentTime);
+            log.info("Successfully requested reminder schedules for appointment: {}", saved.getId());
 
             AppointmentResponseDTO response = appointmentMapper.toResponseDto(saved);
             populateNames(response);
@@ -171,18 +177,21 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     public Page<AppointmentResponseDTO> getAllAppointments(UUID patientId, UUID doctorId, LocalDate date,
             AppointmentStatus status, Pageable pageable) {
-        Page<AppointmentResponseDTO> page = appointmentRepository.findWithFilters(patientId, doctorId, date, status, pageable)
+        Page<AppointmentResponseDTO> page = appointmentRepository
+                .findWithFilters(patientId, doctorId, date, status, pageable)
                 .map(appointmentMapper::toResponseDto);
         page.forEach(this::populateNames);
         return page;
     }
 
     private void populateNames(AppointmentResponseDTO dto) {
-        if (dto == null) return;
+        if (dto == null)
+            return;
 
         try {
             String url = doctorServiceUrl;
-            if (!url.endsWith("/")) url += "/";
+            if (!url.endsWith("/"))
+                url += "/";
             DoctorDTO doctor = restTemplate.getForObject(url + dto.getDoctorId(), DoctorDTO.class);
             if (doctor != null) {
                 dto.setDoctorName("Dr. " + doctor.getFirstName() + " " + doctor.getLastName());
@@ -194,7 +203,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         try {
             String url = patientServiceUrl;
-            if (!url.endsWith("/")) url += "/";
+            if (!url.endsWith("/"))
+                url += "/";
             PatientDTO patient = restTemplate.getForObject(url + dto.getPatientId(), PatientDTO.class);
             if (patient != null) {
                 dto.setPatientName(patient.getFirstName() + " " + patient.getLastName());
@@ -250,7 +260,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setCancellationReason(cancellationRequest.getReason());
 
         Appointment updated = appointmentRepository.save(appointment);
-        
+
         // Delete reminders if cancelled
         schedulerService.deleteReminderSchedules(updated.getId());
 
@@ -281,21 +291,25 @@ public class AppointmentServiceImpl implements AppointmentService {
         Appointment appointment = appointmentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
 
-        if (appointment.getStatus() == AppointmentStatus.CANCELLED || appointment.getStatus() == AppointmentStatus.COMPLETED) {
+        if (appointment.getStatus() == AppointmentStatus.CANCELLED
+                || appointment.getStatus() == AppointmentStatus.COMPLETED) {
             throw new ConflictException("Cannot reschedule a " + appointment.getStatus() + " appointment.");
         }
 
         // Validate new slot
-        String slotsUrl = doctorServiceUrl + "/" + appointment.getDoctorId() + "/slots?date=" + request.getNewSlotDate();
+        String slotsUrl = doctorServiceUrl + "/" + appointment.getDoctorId() + "/slots?date="
+                + request.getNewSlotDate();
         try {
             com.clinic.appointment_service.dto.external.AvailabilityResponseDTO availability = restTemplate
                     .getForObject(slotsUrl, com.clinic.appointment_service.dto.external.AvailabilityResponseDTO.class);
 
-            String requestedStart = request.getNewSlotStart().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+            String requestedStart = request.getNewSlotStart()
+                    .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
             String requestedEnd = request.getNewSlotEnd().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
 
             var matchedSlot = availability.getSlots().stream()
-                    .filter(slot -> slot.getStart().startsWith(requestedStart) && slot.getEnd().startsWith(requestedEnd))
+                    .filter(slot -> slot.getStart().startsWith(requestedStart)
+                            && slot.getEnd().startsWith(requestedEnd))
                     .findFirst()
                     .orElseThrow(() -> new ValidationException("Requested slot does not exist."));
 
@@ -307,9 +321,9 @@ public class AppointmentServiceImpl implements AppointmentService {
             var overlapping = appointmentRepository.existsByDoctorIdAndSlotDateAndSlotStart(
                     appointment.getDoctorId(), request.getNewSlotDate(), request.getNewSlotStart());
             if (overlapping && !request.getNewSlotDate().equals(appointment.getSlotDate())) {
-                 // Simplified check: if it's the same doctor/date/start, it's ourselves? 
-                 // Actually the existingBy... doesn't take ID.
-                 // Let's just assume if it's found, it's a conflict unless we are very careful.
+                // Simplified check: if it's the same doctor/date/start, it's ourselves?
+                // Actually the existingBy... doesn't take ID.
+                // Let's just assume if it's found, it's a conflict unless we are very careful.
             }
 
             appointment.setSlotDate(request.getNewSlotDate());
@@ -323,17 +337,21 @@ public class AppointmentServiceImpl implements AppointmentService {
             log.info("Updating reminder schedules for rescheduled appointment: {}", saved.getId());
             schedulerService.deleteReminderSchedules(saved.getId());
             LocalDateTime newAppointmentTime = LocalDateTime.of(saved.getSlotDate(), saved.getSlotStart());
-            // We need patient info for reminders. In a real app we'd fetch it again or have it in the entity.
-            // For now, we'll try to get it from the appointment if it was stored, or fetch it.
+            // We need patient info for reminders. In a real app we'd fetch it again or have
+            // it in the entity.
+            // For now, we'll try to get it from the appointment if it was stored, or fetch
+            // it.
             // Assuming we fetch it here like in bookAppointment:
             try {
-                PatientDTO patient = restTemplate.getForObject(patientServiceUrl + "/" + saved.getPatientId(), PatientDTO.class);
+                PatientDTO patient = restTemplate.getForObject(patientServiceUrl + "/" + saved.getPatientId(),
+                        PatientDTO.class);
                 if (patient != null) {
                     String email = patient.getEmail();
                     if (email == null || email.isBlank()) {
                         email = fetchEmailFromAuth(patient.getUserId());
                     }
-                    schedulerService.createReminderSchedules(saved.getId(), patient.getUserId(), email, newAppointmentTime);
+                    schedulerService.createReminderSchedules(saved.getId(), patient.getUserId(), email,
+                            newAppointmentTime);
                 }
             } catch (Exception e) {
                 log.warn("Could not re-schedule reminders for appointment {}: {}", saved.getId(), e.getMessage());
@@ -351,19 +369,22 @@ public class AppointmentServiceImpl implements AppointmentService {
     public java.util.List<WaitlistResponseDTO> getWaitlistForAppointment(UUID appointmentId) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
-        
-        var entries = waitlistRepository.findAllByDoctorIdAndPreferredDate(appointment.getDoctorId(), appointment.getSlotDate());
+
+        var entries = waitlistRepository.findAllByDoctorIdAndPreferredDate(appointment.getDoctorId(),
+                appointment.getSlotDate());
         return entries.stream()
                 .map(appointmentMapper::toResponseDto)
                 .collect(java.util.stream.Collectors.toList());
     }
 
     private String fetchEmailFromAuth(UUID userId) {
-        if (userId == null) return null;
+        if (userId == null)
+            return null;
         try {
             log.info("Fetching email from Auth Service for userId: {}", userId);
             String url = authServiceUrl;
-            if (!url.endsWith("/")) url += "/";
+            if (!url.endsWith("/"))
+                url += "/";
             url += "api/users/" + userId;
             com.clinic.appointment_service.dto.external.UserDTO user = restTemplate.getForObject(
                     url, com.clinic.appointment_service.dto.external.UserDTO.class);
