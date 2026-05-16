@@ -141,7 +141,7 @@ namespace Auth.Application.Services
             {
                 try
                 {
-                    var patientServiceUrl = _configuration["Services:PatientService"] ?? "http://localhost:8083";
+                    var patientServiceUrl = _configuration["Services:PatientService"] ?? "http://patient-service:8083";
                     var client = _httpClientFactory.CreateClient();
                     var response = await client.GetAsync($"{patientServiceUrl}/patients/user/{userId}");
                     if (response.IsSuccessStatusCode)
@@ -168,7 +168,7 @@ namespace Auth.Application.Services
             {
                 try
                 {
-                    var doctorServiceUrl = _configuration["Services:DoctorService"] ?? "http://localhost:8082";
+                    var doctorServiceUrl = _configuration["Services:DoctorService"] ?? "http://doctor-service:8082";
                     var client = _httpClientFactory.CreateClient();
                     var response = await client.GetAsync($"{doctorServiceUrl}/doctors/user/{userId}");
                     if (response.IsSuccessStatusCode)
@@ -249,7 +249,7 @@ namespace Auth.Application.Services
                 {
                     try
                     {
-                        var patientServiceUrl = _configuration["Services:PatientService"] ?? "http://localhost:8083";
+                        var patientServiceUrl = _configuration["Services:PatientService"] ?? "http://patient-service:8083";
                         // Get patient ID first
                         var getResponse = await client.GetAsync($"{patientServiceUrl}/patients/user/{userId}");
                         if (getResponse.IsSuccessStatusCode)
@@ -273,7 +273,7 @@ namespace Auth.Application.Services
                 {
                     try
                     {
-                        var doctorServiceUrl = _configuration["Services:DoctorService"] ?? "http://localhost:8082";
+                        var doctorServiceUrl = _configuration["Services:DoctorService"] ?? "http://doctor-service:8082";
                         var getResponse = await client.GetAsync($"{doctorServiceUrl}/doctors/user/{userId}");
                         if (getResponse.IsSuccessStatusCode)
                         {

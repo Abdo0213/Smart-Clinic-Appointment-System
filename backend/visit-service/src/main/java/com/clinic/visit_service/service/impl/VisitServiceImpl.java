@@ -47,6 +47,9 @@ public class VisitServiceImpl implements VisitService {
     @Value("${services.billing.url}")
     private String billingServiceUrl;
 
+    @Value("${services.patient.url}")
+    private String patientServiceUrl;
+
     @Override
     @Transactional
     public VisitResponse createVisit(VisitRequest request) {
@@ -366,7 +369,9 @@ public class VisitServiceImpl implements VisitService {
         try {
             // Patient Service is on port 8083 (Gateway uses /api/patients)
             // But internal service-to-service calls often use direct URLs
-            String url = "http://localhost:8083/patients/" + patientId;
+            String url = patientServiceUrl;
+            if (!url.endsWith("/")) url += "/";
+            url += patientId;
             ResponseEntity<java.util.Map> response = restTemplate.getForEntity(url, java.util.Map.class);
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 java.util.Map patient = response.getBody();

@@ -22,14 +22,14 @@ spring:
             allowedHeaders: "*"
       routes:
         - id: auth-service
-          uri: ${AUTH_SERVICE_URL:http://localhost:5005}
+          uri: ${AUTH_SERVICE_URL:http://auth-service:8080}
           predicates:
             - Path=/api/auth/**
           filters:
             - name: AuthenticationFilter
 
         - id: user-service
-          uri: ${AUTH_SERVICE_URL:http://localhost:5005}
+          uri: ${AUTH_SERVICE_URL:http://auth-service:8080}
           predicates:
             - Path=/api/users/**
           filters:
@@ -38,7 +38,7 @@ spring:
                 roles: Admin, Receptionist
 
         - id: admin-service
-          uri: ${ADMIN_SERVICE_URL:http://localhost:8088}
+          uri: ${ADMIN_SERVICE_URL:http://admin-service:8080}
           predicates:
             - Path=/api/admin/**
           filters:
@@ -48,7 +48,7 @@ spring:
                 roles: Admin
 
         - id: patient-service
-          uri: ${PATIENT_SERVICE_URL:http://localhost:8083}
+          uri: ${PATIENT_SERVICE_URL:http://patient-service:8083}
           predicates:
             - Path=/api/patients/**
           filters:
@@ -58,7 +58,7 @@ spring:
                 roles: Admin,Doctor,Receptionist,Patient
 
         - id: doctor-service
-          uri: ${DOCTOR_SERVICE_URL:http://localhost:8082}
+          uri: ${DOCTOR_SERVICE_URL:http://doctor-service:8082}
           predicates:
             - Path=/api/doctors/**
           filters:
@@ -68,7 +68,7 @@ spring:
                 roles: Admin,Doctor,Receptionist,Patient
 
         - id: appointment-service
-          uri: ${APPOINTMENT_SERVICE_URL:http://localhost:8084}
+          uri: ${APPOINTMENT_SERVICE_URL:http://appointment-service:8084}
           predicates:
             - Path=/api/appointments/**
           filters:
@@ -78,7 +78,7 @@ spring:
                 roles: Admin,Doctor,Receptionist,Patient
 
         - id: visit-service
-          uri: ${VISIT_SERVICE_URL:http://localhost:8085}
+          uri: ${VISIT_SERVICE_URL:http://visit-service:8085}
           predicates:
             - Path=/api/visits/**
           filters:
@@ -88,7 +88,7 @@ spring:
                 roles: Admin,Doctor,Patient
 
         - id: billing-service
-          uri: ${BILLING_SERVICE_URL:http://localhost:8087}
+          uri: ${BILLING_SERVICE_URL:http://billing-service:8087}
           predicates:
             - Path=/api/billing/**
           filters:
@@ -98,7 +98,7 @@ spring:
                 roles: Admin,Doctor,Receptionist,Patient
 
         - id: notification-service
-          uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8089}
+          uri: ${NOTIFICATION_SERVICE_URL:http://notification-service:8089}
           predicates:
             - Path=/api/notifications/**
           filters:

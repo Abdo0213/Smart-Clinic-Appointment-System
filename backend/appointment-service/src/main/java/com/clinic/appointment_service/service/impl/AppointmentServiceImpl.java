@@ -363,8 +363,11 @@ public class AppointmentServiceImpl implements AppointmentService {
         if (userId == null) return null;
         try {
             log.info("Fetching email from Auth Service for userId: {}", userId);
+            String url = authServiceUrl;
+            if (!url.endsWith("/")) url += "/";
+            url += "api/users/" + userId;
             com.clinic.appointment_service.dto.external.UserDTO user = restTemplate.getForObject(
-                    authServiceUrl + "/" + userId, com.clinic.appointment_service.dto.external.UserDTO.class);
+                    url, com.clinic.appointment_service.dto.external.UserDTO.class);
             return user != null ? user.getEmail() : null;
         } catch (Exception e) {
             log.error("Failed to fetch email from Auth Service: {}", e.getMessage());
