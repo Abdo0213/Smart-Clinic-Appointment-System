@@ -385,7 +385,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             String url = authServiceUrl;
             if (!url.endsWith("/"))
                 url += "/";
-            url += userId;
+            url += "api/users/" + userId;
             com.clinic.appointment_service.dto.external.UserDTO user = restTemplate.getForObject(
                     url, com.clinic.appointment_service.dto.external.UserDTO.class);
             return user != null ? user.getEmail() : null;
