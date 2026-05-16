@@ -12,11 +12,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-@Service
-@RequiredArgsConstructor
+//@Service
+//@RequiredArgsConstructor
 public class AwsNotificationService {
-    private final SnsClient snsClient;
-    private final ObjectMapper objectMapper;
+    private SnsClient snsClient;
+    private ObjectMapper objectMapper;
 
     @Value("${aws.sns.topic.appointment-booked:arn:aws:sns:us-east-1:123456789012:appointment-booked}")
     private String topicArn;

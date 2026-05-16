@@ -35,7 +35,6 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final WaitlistRepository waitlistRepository;
     private final AppointmentMapper appointmentMapper;
     private final RestTemplate restTemplate;
-    private final com.clinic.appointment_service.service.AwsNotificationService awsNotificationService;
     private final com.clinic.appointment_service.service.SchedulerService schedulerService;
 
     @Value("${services.doctor.url}")
@@ -130,22 +129,22 @@ public class AppointmentServiceImpl implements AppointmentService {
             }
 
             Appointment saved = appointmentRepository.save(appointment);
+            log.info("Appointment {} saved successfully to database. Proceeding to schedule reminders.", saved.getId());
             
-            // 6. Trigger Notification (SNS Disabled as per request)
-            // String doctorName = "Dr. " + doctor.getFirstName() + " " + doctor.getLastName();
-            // awsNotificationService.publishAppointmentBooked(saved, patient.getEmail(), patient.getUserId(), doctorName);
-
-            // 7. Schedule Reminders
+            // 6. Schedule Reminders (EventBridge Scheduler -> SQS)
             LocalDateTime appointmentTime = LocalDateTime.of(saved.getSlotDate(), saved.getSlotStart());
             String email = patient.getEmail();
             if (email == null || email.isBlank()) {
                 email = fetchEmailFromAuth(patient.getUserId());
             }
 
-            System.out.println("DEBUG: Calling SchedulerService for appointment " + saved.getId() + " with email " + email);
-            log.info("Initiating reminder scheduling for appointment: {}", saved.getId());
-            schedulerService.createReminderSchedules(saved.getId(), patient.getUserId(), email, appointmentTime);
-            log.info("Successfully requested reminder schedules for appointment: {}", saved.getId());
+            try {
+                log.info("Creating reminder schedules for appointment {} with email {}", saved.getId(), email);
+                schedulerService.createReminderSchedules(saved.getId(), patient.getUserId(), email, appointmentTime);
+            } catch (Exception e) {
+                // We log the error but don't fail the appointment creation if the scheduler fails
+                log.error("Failed to create reminder schedules for appointment {}: {}", saved.getId(), e.getMessage());
+            }
 
             AppointmentResponseDTO response = appointmentMapper.toResponseDto(saved);
             populateNames(response);
