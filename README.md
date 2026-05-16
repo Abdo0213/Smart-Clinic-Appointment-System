@@ -38,31 +38,55 @@ The system uses a "Delayed Trigger" pattern for reminders:
 - Java 17+ (for local development)
 - .NET 8 SDK (for local development)
 
-### Environment Configuration (.env files)
-Each service requires a `.env` file in its respective directory. Below are the key variables needed:
+### Environment Configuration (`.env`)
+To run the project, create a `.env` file in each service directory (or a single root `.env` if using a script to propagate it). Below is the required template:
 
-#### Shared Database Settings (AWS RDS)
 ```env
-DB_URL=jdbc:postgresql://<rds-host>:5432/postgres
+# --- Database Settings ---
+DB_HOST=database-1.cbskasaeej5i.eu-north-1.rds.amazonaws.com
+DB_PORT=5432
+DB_NAME=postgres
 DB_USER=postgres
-DB_PASSWORD=<your-password>
-SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE=3
-```
+DB_PASSWORD=123456789
+DB_URL=jdbc:postgresql://database-1.cbskasaeej5i.eu-north-1.rds.amazonaws.com:5432/postgres
 
-#### AWS Configuration (Required for Appointment & Notification Services)
-```env
+# --- Pool Settings ---
+DB_MAX_POOL_SIZE=3
+SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE=3
+
+# --- Inter-Service URLs (Internal Docker DNS) ---
+AUTH_SERVICE_URL=http://auth-service:8080
+ADMIN_SERVICE_URL=http://admin-service:8080
+PATIENT_SERVICE_URL=http://patient-service:8083
+DOCTOR_SERVICE_URL=http://doctor-service:8082
+APPOINTMENT_SERVICE_URL=http://appointment-service:8084
+VISIT_SERVICE_URL=http://visit-service:8085
+BILLING_SERVICE_URL=http://billing-service:8087
+NOTIFICATION_SERVICE_URL=http://notification-service:8089
+
+# --- JWT Settings ---
+JWT_KEY=SmartClinicAppointmentSystemSuperSecretKey123!
+JWT_ISSUER=ClinicAuthAPI
+JWT_AUDIENCE=ClinicAuthClient
+
+# --- Seed Admin ---
+SEED_ADMIN_EMAIL=admin@clinic.com
+SEED_ADMIN_PASSWORD=AdminPassword123!
+
+# --- AWS Configuration (Required for Appointment & Notification Services) ---
 AWS_ACCESS_KEY=<your-access-key>
 AWS_SECRET_KEY=<your-secret-key>
 AWS_REGION=eu-north-1
 AWS_SQS_QUEUE_ARN=arn:aws:sqs:<region>:<account-id>:clinic-notification-queue
 AWS_EVENTBRIDGE_ROLE_ARN=arn:aws:iam::<account-id>:role/eventbridge-scheduler-sqs-role
-```
 
-#### Email Settings (Notification Service)
-```env
+# --- Email Settings (Notification Service) ---
 MAIL_USERNAME=<your-email>
 MAIL_PASSWORD=<your-app-password>
 ```
+
+> [!IMPORTANT]
+> Ensure that all services have access to these variables, either via their own `.env` file or by passing them through the `docker compose` environment.
 
 ### Running with Docker
 
