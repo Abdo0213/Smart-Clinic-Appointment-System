@@ -106,6 +106,12 @@ spring:
             - name: AuthenticationFilter
               args:
                 roles: Admin,Doctor,Receptionist,Patient
+        - id: health-check
+          uri: https://httpbin.org/get
+          predicates:
+            - Path=/health
+          filters:
+            - SetStatus=200
 
 jwt:
   secret: ${JWT_KEY}
