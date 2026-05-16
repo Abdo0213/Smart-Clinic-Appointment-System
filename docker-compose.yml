@@ -1,81 +1,133 @@
 version: '3.8'
 
 services:
+  # --- API Gateway ---
   api-gateway:
+    image: apigateway-2
     build:
       context: ./backend/ApiGateway
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
+    env_file:
+      - ./backend/ApiGateway/.env
     depends_on:
-      - auth-api
+      - auth-service
+      - admin-service
+      - patient-service
+      - doctor-service
       - appointment-service
+      - visit-service
+      - billing-service
       - notification-service
     networks:
       - clinic-network
 
-  auth-api:
+  # --- Auth Service ---
+  auth-service:
+    image: authapi-2
     build:
       context: ./backend
       dockerfile: AuthService/Auth.Api/Dockerfile
     ports:
-      - "5005:5005"
+      - "5005:8080"
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+    env_file:
+      - ./backend/AuthService/Auth.Api/.env
     networks:
       - clinic-network
 
-  admin-api:
+  # --- Admin Service ---
+  admin-service:
+    image: admservice-2
     build:
       context: ./backend
       dockerfile: AdminService/Admin.Api/Dockerfile
     ports:
-      - "8088:8088"
+      - "8088:8080"
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+    env_file:
+      - ./backend/AdminService/Admin.Api/.env
     networks:
       - clinic-network
 
+  # --- Appointment Service ---
   appointment-service:
+    image: apptservice-2
     build:
       context: ./backend/appointment-service
+      dockerfile: Dockerfile
     ports:
       - "8084:8084"
+    env_file:
+      - ./backend/appointment-service/.env
     networks:
       - clinic-network
 
-  billing-service:
-    build:
-      context: ./backend/billing-service
-    ports:
-      - "8087:8087"
-    networks:
-      - clinic-network
-
+  # --- Doctor Service ---
   doctor-service:
+    image: drservice-2
     build:
       context: ./backend/doctor-service
+      dockerfile: Dockerfile
     ports:
       - "8082:8082"
+    env_file:
+      - ./backend/doctor-service/.env
     networks:
       - clinic-network
 
-  notification-service:
-    build:
-      context: ./backend/notification-service
-    ports:
-      - "8089:8089"
-    networks:
-      - clinic-network
-
+  # --- Patient Service ---
   patient-service:
+    image: patservice-2
     build:
       context: ./backend/patient_service
+      dockerfile: Dockerfile
     ports:
       - "8083:8083"
+    env_file:
+      - ./backend/patient_service/.env
     networks:
       - clinic-network
 
+  # --- Visit Service ---
   visit-service:
+    image: vitservice-2
     build:
       context: ./backend/visit-service
+      dockerfile: Dockerfile
     ports:
       - "8085:8085"
+    env_file:
+      - ./backend/visit-service/.env
+    networks:
+      - clinic-network
+
+  # --- Billing Service ---
+  billing-service:
+    image: billservice-2
+    build:
+      context: ./backend/billing-service
+      dockerfile: Dockerfile
+    ports:
+      - "8087:8087"
+    env_file:
+      - ./backend/billing-service/.env
+    networks:
+      - clinic-network
+
+  # --- Notification Service ---
+  notification-service:
+    image: notifservice-2
+    build:
+      context: ./backend/notification-service
+      dockerfile: Dockerfile
+    ports:
+      - "8089:8089"
+    env_file:
+      - ./backend/notification-service/.env
     networks:
       - clinic-network
 

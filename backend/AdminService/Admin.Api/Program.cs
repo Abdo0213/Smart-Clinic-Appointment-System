@@ -37,32 +37,32 @@ builder.Services.AddDbContext<AdminDbContext>(options =>
 // Configure Inter-Service Communication HTTP Clients
 builder.Services.AddHttpClient<IAppointmentApiClient, AppointmentApiClient>(client =>
 {
-    client.BaseAddress = new Uri("http://localhost:8084");
+    client.BaseAddress = new Uri(builder.Configuration["APPOINTMENT_SERVICE_URL"] ?? "http://localhost:8084");
 });
 
 builder.Services.AddHttpClient<IBillingApiClient, BillingApiClient>(client =>
 {
-    client.BaseAddress = new Uri("http://localhost:8087");
+    client.BaseAddress = new Uri(builder.Configuration["BILLING_SERVICE_URL"] ?? "http://localhost:8087");
 });
 
 builder.Services.AddHttpClient<IVisitApiClient, VisitApiClient>(client =>
 {
-    client.BaseAddress = new Uri("http://localhost:8085");
+    client.BaseAddress = new Uri(builder.Configuration["VISIT_SERVICE_URL"] ?? "http://localhost:8085");
 });
 
 builder.Services.AddHttpClient<IDoctorApiClient, DoctorApiClient>(client =>
 {
-    client.BaseAddress = new Uri("http://localhost:8082");
+    client.BaseAddress = new Uri(builder.Configuration["DOCTOR_SERVICE_URL"] ?? "http://localhost:8082");
 });
 
 builder.Services.AddHttpClient<IPatientApiClient, PatientApiClient>(client =>
 {
-    client.BaseAddress = new Uri("http://localhost:8083");
+    client.BaseAddress = new Uri(builder.Configuration["PATIENT_SERVICE_URL"] ?? "http://localhost:8083");
 });
 
 builder.Services.AddHttpClient<IAuthApiClient, AuthApiClient>(client =>
 {
-    client.BaseAddress = new Uri("http://localhost:5005");
+    client.BaseAddress = new Uri(builder.Configuration["AUTH_SERVICE_URL"] ?? "http://localhost:5005");
 });
 
 // Configure Storage Service

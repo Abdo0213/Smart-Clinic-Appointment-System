@@ -77,8 +77,9 @@ namespace Auth.Api
                 var dbName = Environment.GetEnvironmentVariable("DB_NAME");
                 var dbUser = Environment.GetEnvironmentVariable("DB_USER");
                 var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
+                var dbMaxPoolSize = Environment.GetEnvironmentVariable("DB_MAX_POOL_SIZE") ?? "3";
 
-                connectionString = $"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPassword}";
+                connectionString = $"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPassword};Maximum Pool Size={dbMaxPoolSize};";
             }
             else
             {
